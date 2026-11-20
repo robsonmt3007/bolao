@@ -1245,9 +1245,8 @@
             });
 
             if (infoHora) {
-                const dataFmt = registro.atualizadoEm ? new Date(registro.atualizadoEm).toLocaleString('pt-BR') : 'Não informado';
                 const st = registro.fechado === true ? `Palpite FECHADO em ${formatarDataHora(registro.fechadoEm)}` : (registro.fechado === false ? 'Palpite EM ABERTO (não conta no pote/ranking)' : 'Palpite de formato antigo (conta normalmente)');
-                infoHora.textContent = `${st} • Última atualização: ${dataFmt} • ✅ ${acertos} acerto(s) • ❌ ${erros} erro(s)`;
+                infoHora.textContent = `${st} • ✅ ${acertos} acerto(s) • ❌ ${erros} erro(s)`;
             }
             lista.innerHTML = linhas.join('') || `<p class="text-xs text-slate-400">Sem palpites nas partidas atuais.</p>`;
         }
@@ -1906,6 +1905,6 @@
         }
     </script>
 </body>
-</html>
+</html
 
 
