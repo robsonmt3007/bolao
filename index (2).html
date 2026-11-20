@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Bolão dos Amigos</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Bolão">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between">
+
+    <!-- TELA DE LOGIN DO USUÁRIO -->
+    <div id="modal-login-usuario" class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center space-y-4">
+            <div class="w-12 h-12 bg-emerald-600/20 border border-emerald-500/30 rounded-full flex items-center justify-center mx-auto text-emerald-400 text-xl">
+                <i class="fa-solid fa-user-lock"></i>
+            </div>
+            <div>
+                <h2 class="text-base font-bold text-white">Acesse o seu Bolão</h2>
+                <p class="text-xs text-slate-400 mt-1">Selecione seu nome e digite sua senha.</p>
+            </div>
+            <div class="space-y-3 text-left">
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Participante</label>
+                    <select id="login-select-usuario" class="w-full bg-slate-800 border border-slate-700 text-xs font-bold text-emerald-400 rounded-xl px-3 py-2.5 focus:outline-none">
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Senha</label>
+                    <input type="password" id="login-input-senha" placeholder="Sua senha..." class="w-full bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-emerald-500">
+                </div>
+                <button type="button" onclick="fazerLoginUsuario()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-3 rounded-xl transition shadow">Entrar no Bolão</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CABEÇALHO -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 px-4 py-3">
+        <div class="max-w-xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2.5">
+                <div class="bg-emerald-600/20 border border-emerald-500/30 p-2 rounded-xl text-emerald-400">
+                    <i class="fa-solid fa-trophy text-lg"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-extrabold text-base text-emerald-400">BOLÃO DOS AMIGOS</h1>
+                        <span id="status-nuvem" title="Status da Nuvem" class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                    </div>
+                    <p class="text-[10px] text-slate-400 font-medium" id="texto-status-nuvem">Conectando à nuvem...</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-emerald-400 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700" id="header-usuario-logado">Usuário</span>
+                <button type="button" onclick="sairUsuario()" class="text-slate-400 hover:text-red-400 text-xs px-2 py-1" title="Sair da conta"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="max-w-xl w-full mx-auto p-4 flex-grow pb-20">
+
+        <!-- ABAS DE NAVEGAÇÃO -->
+        <div id="barra-abas" class="grid grid-cols-5 gap-1 bg-slate-900 border border-slate-800 p-1 rounded-xl mb-5 text-center text-[11px] font-semibold">
+            <button type="button" onclick="mudarAba('palpites')" id="tab-btn-palpites" class="py-2.5 rounded-lg transition flex flex-col items-center gap-1 bg-emerald-600 text-white shadow">
+                <i class="fa-solid fa-pen-to-square"></i> Meu Jogo
+            </button>
+            <button type="button" onclick="mudarAba('ver-palpites')" id="tab-btn-ver-palpites" class="py-2.5 rounded-lg transition flex flex-col items-center gap-1 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-eye"></i> Palpites
+            </button>
+            <button type="button" onclick="mudarAba('ranking')" id="tab-btn-ranking" class="py-2.5 rounded-lg transition flex flex-col items-center gap-1 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-medal"></i> Ranking
+            </button>
+            <button type="button" onclick="mudarAba('regras')" id="tab-btn-regras" class="py-2.5 rounded-lg transition flex flex-col items-center gap-1 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-circle-info"></i> Regras
+            </button>
+            <button type="button" onclick="mudarAba('admin')" id="tab-btn-admin" class="py-2.5 rounded-lg transition flex flex-col items-center gap-1 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-gear"></i> Admin
+            </button>
+        </div>
+
+        <!-- ABA 1: MEUS PALPITES -->
+        <div id="tab-palpites" class="space-y-4">
+            <div id="card-prazo" class="hidden"></div>
+            <div class="bg-slate-900 border border-emerald-500/20 rounded-2xl p-4 shadow-xl flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] uppercase font-bold text-emerald-400 block mb-0.5">Pote Acumulado (Confirmados)</span>
+                    <h2 class="text-2xl font-black text-white" id="info-pote">R$ 0,00</h2>
+                    <p class="text-[11px] text-slate-400" id="info-qtd-amigos">0 participantes com palpites ativos</p>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <button type="button" onclick="forcarSincronizacaoNuvem(true)" class="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-3 py-2 rounded-xl transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-rotate"></i> Atualizar
+                    </button>
+                    <button type="button" onclick="abrirModalImportar()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[11px] font-bold px-3 py-1.5 rounded-xl transition flex items-center justify-center gap-1.5">
+                        <i class="fa-brands fa-whatsapp text-emerald-400"></i> Importar Zap
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 flex items-center justify-between gap-2">
+                <div>
+                    <span class="text-[10px] uppercase font-bold text-slate-400 block">Seus palpites</span>
+                    <strong id="info-contador" class="text-white text-sm">0 jogos</strong>
+                </div>
+                <span id="info-estado-palpite" class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30">Em aberto</span>
+            </div>
+
+            <div id="lista-partidas-palpites" class="space-y-3"></div>
+
+            <button type="button" onclick="gerarComprovanteWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg">
+                <i class="fa-brands fa-whatsapp text-lg"></i> <span id="btn-fechar-palpite-txt">Fechar e Enviar Meu Palpite</span>
+            </button>
+        </div>
+
+        <!-- ABA 2: VER PALPITES DOS PARTICIPANTES (RESTRITO ADMIN) -->
+        <div id="tab-ver-palpites" class="space-y-4 hidden">
+            <div id="ver-palpites-login-box" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl text-center space-y-4">
+                <div class="w-12 h-12 bg-emerald-600/20 border border-emerald-500/30 rounded-full flex items-center justify-center mx-auto text-emerald-400 text-xl">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-white">Área Restrita do Administrador</h3>
+                    <p class="text-xs text-slate-400 mt-1">Digite a senha para conferir e gerenciar os palpites dos participantes.</p>
+                </div>
+                <div class="max-w-xs mx-auto space-y-2">
+                    <input type="password" id="ver-palpites-senha-input" placeholder="Senha de acesso..." class="w-full bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2.5 text-center text-white focus:outline-none focus:border-emerald-500">
+                    <button type="button" onclick="validarSenhaVerPalpites()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl transition shadow">Entrar</button>
+                </div>
+            </div>
+
+            <div id="ver-palpites-painel-conteudo" class="space-y-4 hidden">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+                    <div class="flex justify-between items-center gap-2 flex-wrap">
+                        <h2 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-list-check text-emerald-400"></i> Palpites Finalizados</h2>
+                        <button type="button" onclick="enviarRelatorioPalpitesWhatsApp()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+                            <i class="fa-brands fa-whatsapp"></i> Enviar Relatório
+                        </button>
+                    </div>
+                    <p id="resumo-finalizados" class="text-[11px] text-slate-400"></p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-400">
+                                    <th class="py-2 px-2 text-center">#</th>
+                                    <th class="py-2 px-2">Usuário</th>
+                                    <th class="py-2 px-2">Data e Hora</th>
+                                    <th class="py-2 px-2 text-center">Jogos</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-finalizados" class="divide-y divide-slate-800/60"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+                    <div class="flex justify-between items-center flex-wrap gap-2">
+                        <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-eye text-emerald-400"></i> Palpites da Galera
+                        </h2>
+                        <div class="flex items-center gap-2">
+                            <select id="select-ver-amigo" onchange="renderizarVerPalpitesAmigo()" class="bg-slate-800 border border-slate-700 text-xs font-bold text-emerald-400 rounded-lg px-2.5 py-1.5 focus:outline-none">
+                            </select>
+                            <button type="button" onclick="adminReabrirPalpiteSelecionado()" class="bg-amber-600/20 hover:bg-amber-600/30 text-amber-400 border border-amber-500/30 text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5" title="Reabrir palpite para edição">
+                                <i class="fa-solid fa-lock-open"></i> Reabrir
+                            </button>
+                            <button type="button" onclick="adminExcluirPalpitesAmigoSelecionado()" class="bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5" title="Excluir palpites deste usuário">
+                                <i class="fa-solid fa-trash-can"></i> Excluir Palpites
+                            </button>
+                        </div>
+                    </div>
+                    <div id="info-horario-envio" class="text-[11px] text-slate-400 bg-slate-800/40 p-2.5 rounded-xl border border-slate-800"></div>
+                    <div id="lista-ver-palpites-amigo" class="space-y-2.5 pt-2 border-t border-slate-800"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA 3: RANKING -->
+        <div id="tab-ranking" class="space-y-4 hidden">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-ranking-star text-emerald-400"></i> Classificação Oficial
+                    </h2>
+                    <select id="filtro-ranking-comp" onchange="atualizarRanking()" class="bg-slate-800 border border-slate-700 text-xs text-slate-300 rounded-lg px-2 py-1">
+                        <option value="todos">Geral (Todos)</option>
+                    </select>
+                </div>
+
+                <div id="ranking-premio" class="hidden"></div>
+                <button type="button" id="btn-enviar-ranking" onclick="enviarRankingWhatsApp()" class="hidden w-full mb-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl transition items-center justify-center gap-2 shadow">
+                    <i class="fa-brands fa-whatsapp"></i> Enviar Ranking no WhatsApp
+                </button>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400">
+                                <th class="py-2.5 px-2 text-center">#</th>
+                                <th class="py-2.5 px-2">Participante</th>
+                                <th class="py-2.5 px-2 text-center">Jogos</th>
+                                <th class="py-2.5 px-2 text-center">Acertos</th>
+                                <th class="py-2.5 px-2 text-right">Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-ranking-corpo" class="divide-y divide-slate-800/60"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA 4: REGRAS & PIX -->
+        <div id="tab-regras" class="space-y-4 hidden">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+                <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-emerald-400"></i> Regulamento Oficial
+                </h2>
+                <div class="space-y-3 text-xs text-slate-300 leading-relaxed">
+                    <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800">
+                        <strong class="text-white block mb-1">✅ Regra Única (1 Ponto por Acerto)</strong>
+                        Escolha quem vence a partida (Time da Casa ou Visitante) ou se o jogo termina empatado. Acertou, ganha <strong>1 ponto</strong> de forma automática!
+                    </div>
+                    <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800">
+                        <strong class="text-white block mb-1">⚖️ Empate e Premiação</strong>
+                        Não há critério de desempate: quem empatar na 1ª colocação ocupa a mesma posição e o prêmio é <strong>dividido igualmente</strong> entre os vencedores.
+                    </div>
+                    <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800">
+                        <strong class="text-white block mb-1">💰 Valor do Palpite</strong>
+                        Cada palpite fechado custa <strong id="regra-valor">R$ 10,00</strong> e forma o pote do prêmio.
+                    </div>
+                    <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800">
+                        <strong class="text-white block mb-1">🔒 Fechamento do Palpite</strong>
+                        Ao enviar no WhatsApp o palpite é fechado (com dupla confirmação) e não pode mais ser alterado. Só palpites fechados entram no pote e no ranking.
+                    </div>
+                    <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800">
+                        <strong class="text-white block mb-1">⏰ Prazo</strong>
+                        Os palpites encerram <strong>2 horas antes</strong> do início do primeiro jogo cadastrado.
+                    </div>
+                </div>
+                <div id="card-instalar" class="border-t border-slate-800 pt-4 space-y-2">
+                    <span class="text-xs font-bold text-white block"><i class="fa-solid fa-mobile-screen-button text-emerald-400"></i> Instalar o aplicativo</span>
+                    <p id="dica-instalar" class="text-[11px] text-slate-400"></p>
+                    <button type="button" id="btn-instalar" onclick="instalarApp()" class="hidden w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl transition">Instalar Bolão dos Amigos</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA 5: ADMIN (COM SENHA) -->
+        <div id="tab-admin" class="space-y-4 hidden">
+            <div id="admin-login-box" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl text-center space-y-4">
+                <div class="w-12 h-12 bg-emerald-600/20 border border-emerald-500/30 rounded-full flex items-center justify-center mx-auto text-emerald-400 text-xl">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-white">Área Restrita do Administrador</h3>
+                    <p class="text-xs text-slate-400 mt-1">Digite a senha para gerenciar torneios, participantes e partidas.</p>
+                </div>
+                <div class="max-w-xs mx-auto space-y-2">
+                    <input type="password" id="admin-senha-input" placeholder="Senha de acesso..." class="w-full bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2.5 text-center text-white focus:outline-none focus:border-emerald-500">
+                    <button type="button" onclick="validarSenhaAdmin()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl transition shadow">Entrar no Painel</button>
+                </div>
+            </div>
+
+            <div id="admin-painel-conteudo" class="space-y-4 hidden">
+                <div id="aviso-senha-admin" class="hidden bg-red-500/10 border border-red-500/30 rounded-2xl p-3 text-xs text-red-300">
+                    ⚠️ A senha do Admin ainda é a padrão (1234). Troque agora em <strong>Participantes → Redefinir senha</strong>.
+                </div>
+                <div class="bg-slate-900 border border-emerald-500/30 rounded-2xl p-4 shadow-xl space-y-2">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-xs font-bold text-emerald-400">Conexão com a Nuvem (JSONBin)</h3>
+                            <p class="text-[10px] text-slate-400 font-mono mt-0.5" id="admin-bin-id-display">ID: Verificando...</p>
+                        </div>
+                        <button type="button" onclick="forcarSincronizacaoNuvem(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition">Forçar Sync</button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                    <h3 class="text-xs font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-coins text-emerald-400"></i> Valor por Palpite</h3>
+                    <p class="text-[11px] text-slate-400">Valor pago por participante. O pote é calculado automaticamente (valor × palpites fechados).</p>
+                    <div class="flex gap-2">
+                        <input type="number" id="input-valor-palpite" min="0" step="0.01" placeholder="Ex: 10" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 flex-grow text-white">
+                        <button type="button" onclick="salvarValorPalpite()" class="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-xl">Salvar Valor</button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                    <h3 class="text-xs font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-clock text-emerald-400"></i> Fechamento dos Palpites</h3>
+                    <p id="admin-prazo-info" class="text-[11px] text-slate-400"></p>
+                    <button type="button" id="btn-toggle-prazo" onclick="alternarFechamentoAutomatico()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold py-2 rounded-xl transition">Alternar</button>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                    <h3 class="text-xs font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-sliders text-emerald-400"></i> Limite de Palpites por Aposta</h3>
+                    <p class="text-[11px] text-slate-400">Defina quantos jogos cada participante pode escolher por rodada (0 para sem limite).</p>
+                    <div class="flex gap-2">
+                        <input type="number" id="input-limite-jogos" min="0" placeholder="Ex: 5" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 flex-grow text-white">
+                        <button type="button" onclick="salvarLimiteJogos()" class="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-xl">Salvar Limite</button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                        <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-whistle text-emerald-400"></i> Lançar Resultado Oficial
+                        </h2>
+                        <button type="button" onclick="sairAdmin()" class="text-[10px] text-red-400 hover:underline font-bold">Sair / Bloquear</button>
+                    </div>
+                    <div id="lista-admin-partidas" class="space-y-2.5"></div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-2 text-center">
+                    <h3 class="text-xs font-bold text-amber-400">🏆 Fim da Rodada / Torneio</h3>
+                    <p class="text-[11px] text-slate-400">Zere a pontuação para iniciar uma nova rodada mantendo os participantes e jogos.</p>
+                    <button type="button" onclick="zerarRanking()" class="w-full bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold py-2.5 rounded-xl transition shadow">Zerar Ranking e Pontuações</button>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                    <h3 class="text-xs font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-trophy text-emerald-400"></i> Gerenciar Torneios / Campeonatos</h3>
+                    <div class="flex gap-2">
+                        <input type="text" id="input-novo-torneio" placeholder="Nome do torneio (ex: Paulistão)..." class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 flex-grow text-white">
+                        <button type="button" onclick="adicionarTorneio()" class="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-xl">Criar</button>
+                    </div>
+                    <div id="lista-admin-torneios" class="space-y-1.5 pt-2 border-t border-slate-800 max-h-40 overflow-y-auto"></div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                    <h3 class="text-xs font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-futbol text-emerald-400"></i> Adicionar Nova Partida</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="text" id="novo-time-casa" placeholder="Time Casa (ex: Flamengo)" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white">
+                        <input type="text" id="novo-time-visitante" placeholder="Visitante (ex: Vasco)" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <select id="novo-campeonato" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white">
+                        </select>
+                        <input type="datetime-local" id="nova-data-jogo" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white">
+                    </div>
+                    <button type="button" id="btn-add-partida" onclick="adicionarNovaPartida()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl transition">Cadastrar Partida</button>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                    <h3 class="text-xs font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-users text-emerald-400"></i> Gerenciar Participantes e Senhas</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input type="text" id="input-novo-amigo" placeholder="Nome do participante..." class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white">
+                        <input type="text" id="input-senha-amigo" placeholder="Senha de acesso..." class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white">
+                    </div>
+                    <button type="button" onclick="adicionarAmigoComSenha()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl transition">Adicionar Participante</button>
+                    <div id="lista-admin-amigos" class="space-y-1.5 pt-2 border-t border-slate-800 max-h-40 overflow-y-auto"></div>
+                    <div class="pt-2 border-t border-slate-800 flex justify-between items-center">
+                        <span class="text-[11px] text-slate-500">Escudos dos times:</span>
+                        <button type="button" onclick="recarregarEscudos()" class="text-[11px] text-emerald-400 font-semibold">Recarregar escudos</button>
+                    </div>
+                    <div class="pt-2 border-t border-slate-800 flex justify-between items-center">
+                        <span class="text-[11px] text-slate-500">Resetar cache local do aparelho:</span>
+                        <button type="button" onclick="resetarCacheLocal()" class="text-[11px] text-amber-400 font-semibold">Limpar Cache Local</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL WHATSAPP -->
+    <div id="modal-importar" class="fixed inset-0 bg-slate-950/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-5 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-sm font-bold text-white">Importar Palpite do WhatsApp</h3>
+                <button type="button" onclick="fecharModalImportar()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <textarea id="textarea-whatsapp" rows="5" placeholder="Cole aqui a mensagem do comprovante..." class="w-full bg-slate-800 border border-slate-700 text-xs text-slate-200 rounded-xl p-3"></textarea>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="fecharModalImportar()" class="bg-slate-800 text-slate-300 text-xs font-bold px-4 py-2 rounded-xl">Cancelar</button>
+                <button type="button" onclick="processarImportacaoWhatsApp()" class="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-xl">Importar</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-slate-900 border-t border-slate-800 py-3 text-center text-[10px] text-slate-500">
+        Bolão dos Amigos • Sincronização em Tempo Real
+    </footer>
+
+    <script>
+                const CACHE_LOCAL_KEY = "bolao_amigos_dados_v1";
+        const PENDENTE_KEY = "bolao_pendente_envio";
+        let adminLogado = false;
+        let verPalpitesLogado = false;
+        let abaAtual = 'palpites';
+        let sincronizandoAgora = false;
+
+        const JSONBIN_MASTER_KEY = "$2a$10$aW.mUJ8nW0E9kjAyIY1KveHbcOXt9xBk1L5fjtTv88Dc2fCGDwH7m";
+        const BIN_ID_FIXO = "6afe26f5ffd5d16053cce3f2";
+        let JSONBIN_BIN_ID = BIN_ID_FIXO || localStorage.getItem('bolao_bin_id') || "";
+
+        let usuarioLogado = "";
+
+        const ULTIMA_SYNC_KEY = "bolao_ultima_sync";
+        let ultimaSync = localStorage.getItem(ULTIMA_SYNC_KEY) || "";
+
+        function formatarDataHora(iso) {
+            const d = new Date(iso);
+            if (isNaN(d)) return "";
+            return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        function textoUltimaSync() {
+            return ultimaSync ? formatarDataHora(ultimaSync) : "ainda não sincronizado";
+        }
+
+        function marcarSincronizacao() {
+            ultimaSync = new Date().toISOString();
+            try { localStorage.setItem(ULTIMA_SYNC_KEY, ultimaSync); } catch (e) {}
+        }
+
+        // Segunda confirmação para qualquer exclusão, exibindo a última sincronização com a nuvem
+        function confirmarExclusaoDupla(descricao) {
+            if (!confirm(`Deseja excluir ${descricao}?`)) return false;
+            return confirm(`⚠️ SEGUNDA CONFIRMAÇÃO\n\nVocê está prestes a excluir ${descricao}.\n\nÚltima sincronização com a nuvem: ${textoUltimaSync()}\n\nEsta ação não pode ser desfeita. Confirmar exclusão?`);
+        }
+
+        const CORES_TIMES = {
+            "flamengo": { fundo: "#b91c1c", faixa: "#0f172a", texto: "#ffffff", sigla: "FLA" },
+            "palmeiras": { fundo: "#15803d", faixa: "#ffffff", texto: "#ffffff", sigla: "PAL" },
+            "corinthians": { fundo: "#0f172a", faixa: "#ffffff", texto: "#ffffff", sigla: "COR" },
+            "são paulo": { fundo: "#dc2626", faixa: "#0f172a", texto: "#ffffff", sigla: "SPFC" },
+            "sao paulo": { fundo: "#dc2626", faixa: "#0f172a", texto: "#ffffff", sigla: "SPFC" },
+            "botafogo": { fundo: "#0f172a", faixa: "#ffffff", texto: "#ffffff", sigla: "BOT" },
+            "fluminense": { fundo: "#7f1d1d", faixa: "#15803d", texto: "#ffffff", sigla: "FLU" },
+            "vasco": { fundo: "#0f172a", faixa: "#ffffff", texto: "#ffffff", sigla: "VAS" },
+            "grêmio": { fundo: "#0284c7", faixa: "#0f172a", texto: "#ffffff", sigla: "GRE" },
+            "gremio": { fundo: "#0284c7", faixa: "#0f172a", texto: "#ffffff", sigla: "GRE" },
+            "internacional": { fundo: "#dc2626", faixa: "#ffffff", texto: "#ffffff", sigla: "INT" },
+            "fortaleza": { fundo: "#1d4ed8", faixa: "#dc2626", texto: "#ffffff", sigla: "FEC" },
+            "ceará": { fundo: "#0f172a", faixa: "#ffffff", texto: "#ffffff", sigla: "CSC" },
+            "ceara": { fundo: "#0f172a", faixa: "#ffffff", texto: "#ffffff", sigla: "CSC" },
+            "cruzeiro": { fundo: "#1d4ed8", faixa: "#ffffff", texto: "#ffffff", sigla: "CRU" },
+            "atlético-mg": { fundo: "#0f172a", faixa: "#ffffff", texto: "#ffffff", sigla: "CAM" },
+            "atletico-mg": { fundo: "#0f172a", faixa: "#ffffff", texto: "#ffffff", sigla: "CAM" },
+            "bahia": { fundo: "#1d4ed8", faixa: "#dc2626", texto: "#ffffff", sigla: "BAH" },
+            "vitória": { fundo: "#dc2626", faixa: "#0f172a", texto: "#ffffff", sigla: "VIT" },
+            "vitoria": { fundo: "#dc2626", faixa: "#0f172a", texto: "#ffffff", sigla: "VIT" },
+            "santos": { fundo: "#ffffff", faixa: "#0f172a", texto: "#0f172a", sigla: "SAN" },
+            "brasil": { fundo: "#eab308", faixa: "#15803d", texto: "#1e3a8a", sigla: "BRA" },
+            "argentina": { fundo: "#38bdf8", faixa: "#ffffff", texto: "#0f172a", sigla: "ARG" }
+        };
+
+        // ===== Segurança: hash de senhas (SHA-256 com sal), sessão validada e limite de tentativas =====
+        const SENHA_PADRAO = "1234";
+        const SESSAO_KEY = "bolao_sessao_v2";
+        const TENTATIVAS_KEY = "bolao_tentativas";
+        const HASH_PREFIXO = "h1$";
+        const HASH_RODADAS = 5000;
+        const ENCODER = new TextEncoder();
+        const SHA_K = [], SHA_H0 = [];
+        (function () {
+            let n = 2, c = 0;
+            while (c < 64) {
+                let primo = true;
+                for (let d = 2; d * d <= n; d++) { if (n % d === 0) { primo = false; break; } }
+                if (primo) {
+                    SHA_K.push(Math.floor((Math.cbrt(n) % 1) * 4294967296));
+                    if (c < 8) SHA_H0.push(Math.floor((Math.sqrt(n) % 1) * 4294967296));
+                    c++;
+                }
+                n++;
+            }
+        })();
+
+        function sha256Hex(str) {
+            const bytes = ENCODER.encode(str);
+            const l = bytes.length;
+            const total = ((l + 9 + 63) >> 6) << 6;
+            const buf = new Uint8Array(total);
+            buf.set(bytes);
+            buf[l] = 0x80;
+            const dv = new DataView(buf.buffer);
+            dv.setUint32(total - 8, Math.floor((l * 8) / 4294967296));
+            dv.setUint32(total - 4, (l * 8) >>> 0);
+            const H = SHA_H0.slice();
+            const w = new Array(64);
+            const rotr = (x, n) => (x >>> n) | (x << (32 - n));
+            for (let off = 0; off < total; off += 64) {
+                for (let i = 0; i < 16; i++) w[i] = dv.getUint32(off + i * 4);
+                for (let i = 16; i < 64; i++) {
+                    const s0 = rotr(w[i - 15], 7) ^ rotr(w[i - 15], 18) ^ (w[i - 15] >>> 3);
+                    const s1 = rotr(w[i - 2], 17) ^ rotr(w[i - 2], 19) ^ (w[i - 2] >>> 10);
+                    w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
+                }
+                let a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+                for (let i = 0; i < 64; i++) {
+                    const S1 = rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25);
+                    const ch = (e & f) ^ (~e & g);
+                    const t1 = (h + S1 + ch + SHA_K[i] + w[i]) | 0;
+                    const S0 = rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22);
+                    const maj = (a & b) ^ (a & c) ^ (b & c);
+                    const t2 = (S0 + maj) | 0;
+                    h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+                }
+                H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+                H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+            }
+            return H.map(x => (x >>> 0).toString(16).padStart(8, '0')).join('');
+        }
+
+        function gerarSal() {
+            const a = new Uint8Array(8);
+            crypto.getRandomValues(a);
+            return Array.from(a, b => b.toString(16).padStart(2, '0')).join('');
+        }
+        function derivarHash(senha, sal) {
+            let h = sha256Hex(sal + "|" + senha);
+            for (let i = 0; i < HASH_RODADAS; i++) h = sha256Hex(h + sal + senha);
+            return h;
+        }
+        function criarCredencial(senha) {
+            const sal = gerarSal();
+            return HASH_PREFIXO + sal + "$" + derivarHash(String(senha), sal);
+        }
+        function credencialValida(c) {
+            return typeof c === 'string' && c.startsWith(HASH_PREFIXO) && c.split('$').length === 3;
+        }
+        function verificarSenha(senha, cred) {
+            if (!credencialValida(cred)) return false;
+            const partes = cred.split('$');
+            return derivarHash(String(senha), partes[1]) === partes[2];
+        }
+
+        function bloqueioLogin() {
+            try {
+                const t = JSON.parse(localStorage.getItem(TENTATIVAS_KEY) || "{}");
+                if (t.ate && Date.now() < t.ate) return Math.ceil((t.ate - Date.now()) / 1000);
+            } catch (e) {}
+            return 0;
+        }
+        function registrarFalhaLogin() {
+            let t = {};
+            try { t = JSON.parse(localStorage.getItem(TENTATIVAS_KEY) || "{}") || {}; } catch (e) {}
+            t.n = (t.n || 0) + 1;
+            if (t.n >= 5) { t.ate = Date.now() + 60000; t.n = 0; }
+            try { localStorage.setItem(TENTATIVAS_KEY, JSON.stringify(t)); } catch (e) {}
+        }
+        function limparFalhasLogin() { try { localStorage.removeItem(TENTATIVAS_KEY); } catch (e) {} }
+
+        function tokenSessao(u) { return sha256Hex("sessao|" + u + "|" + ((dadosApp.senhasUsuarios || {})[u] || "")); }
+        function salvarSessao() {
+            try { localStorage.setItem(SESSAO_KEY, JSON.stringify({ u: usuarioLogado, t: tokenSessao(usuarioLogado) })); } catch (e) {}
+        }
+        function restaurarSessao() {
+            try {
+                const sess = JSON.parse(localStorage.getItem(SESSAO_KEY) || "null");
+                if (sess && sess.u && dadosApp.amigos.includes(sess.u) && sess.t === tokenSessao(sess.u)) {
+                    usuarioLogado = sess.u;
+                    if (sess.u === "Admin") { adminLogado = true; verPalpitesLogado = true; }
+                    return;
+                }
+            } catch (e) {}
+            usuarioLogado = "";
+            try { localStorage.removeItem(SESSAO_KEY); } catch (e) {}
+        }
+        function ehAdmin() { return usuarioLogado === "Admin"; }
+
+        // Dificulta o uso casual das ferramentas do navegador (não é proteção real, apenas uma barreira)
+        document.addEventListener('contextmenu', e => {
+            if (!/INPUT|TEXTAREA/.test((e.target && e.target.tagName) || '')) e.preventDefault();
+        });
+        document.addEventListener('keydown', e => {
+            const k = (e.key || '').toLowerCase();
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(k)) || (e.ctrlKey && k === 'u') || (e.metaKey && e.altKey && ['i', 'j', 'c', 'u'].includes(k))) {
+                e.preventDefault();
+            }
+        });
+
+        function escapeHtml(s) {
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        function gerarEscudoVetorial(nome) {
+            const limpo = nome ? nome.trim() : "Time";
+            const chave = limpo.toLowerCase();
+            const estilo = CORES_TIMES[chave] || { fundo: "#064e3b", faixa: "#10b981", texto: "#ffffff", sigla: limpo.substring(0, 3).toUpperCase() };
+            const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M15 10 H85 V50 C85 75 50 92 50 92 C50 92 15 75 15 50 Z' fill='${estilo.fundo}' stroke='${estilo.faixa}' stroke-width='6'/><text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' fill='${estilo.texto}' font-size='26' font-family='sans-serif' font-weight='900'>${escapeHtml(estilo.sigla)}</text></svg>`;
+            return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+        }
+
+        // ----- Escudos: busca automática online (TheSportsDB) com cache local -----
+        const ESCUDOS_CACHE_KEY = "bolao_escudos_cache_v1";
+        const ALIAS_TIMES = {
+            "brasil": "Brazil",
+            "são paulo": "Sao Paulo",
+            "grêmio": "Gremio",
+            "ceará": "Ceara",
+            "vitória": "Vitoria",
+            "atlético-mg": "Atletico Mineiro",
+            "atletico-mg": "Atletico Mineiro",
+            "atlético mineiro": "Atletico Mineiro",
+            "athletico-pr": "Athletico Paranaense",
+            "internacional": "Internacional",
+            "fortaleza": "Fortaleza EC"
+        };
+        let escudosCache = {};
+        try { escudosCache = JSON.parse(localStorage.getItem(ESCUDOS_CACHE_KEY) || "{}") || {}; } catch (e) { escudosCache = {}; }
+        const escudosEmBusca = new Set();
+        const escudosFalhos = new Set();
+
+        function obterEscudo(nome) {
+            if (!nome) return gerarEscudoVetorial("Time");
+            const chave = nome.trim().toLowerCase();
+            if (escudosCache[chave]) return escudosCache[chave];
+            buscarEscudoOnline(nome);          // busca em segundo plano
+            return gerarEscudoVetorial(nome);  // escudo provisório enquanto carrega
+        }
+
+        function carregarImagem(url) {
+            return new Promise(res => {
+                const img = new Image();
+                img.referrerPolicy = "no-referrer";
+                img.onload = () => res(true);
+                img.onerror = () => res(false);
+                img.src = url;
+            });
+        }
+
+        async function escudoTheSportsDB(termo, chaveApi) {
+            const r = await fetch(`https://www.thesportsdb.com/api/v1/json/${chaveApi}/searchteams.php?t=${encodeURIComponent(termo)}`);
+            if (!r.ok) return null;
+            const j = await r.json();
+            const times = ((j && j.teams) || []).filter(t => t.strSport === 'Soccer');
+            const e = times.find(t => t.strCountry === 'Brazil') || times[0];
+            return e ? (e.strBadge || e.strTeamBadge || null) : null;
+        }
+
+        async function escudoWikipedia(termo) {
+            const q = encodeURIComponent(`${termo} futebol clube`);
+            const r = await fetch(`https://pt.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${q}&gsrlimit=1&prop=pageimages&piprop=thumbnail&pithumbsize=120&format=json&origin=*`);
+            if (!r.ok) return null;
+            const j = await r.json();
+            const paginas = j && j.query && j.query.pages ? Object.values(j.query.pages) : [];
+            return paginas[0] && paginas[0].thumbnail ? paginas[0].thumbnail.source : null;
+        }
+
+        async function buscarEscudoOnline(nome) {
+            const chave = nome.trim().toLowerCase();
+            if (!chave || escudosCache[chave] || escudosEmBusca.has(chave) || escudosFalhos.has(chave)) return;
+            escudosEmBusca.add(chave);
+            const termo = ALIAS_TIMES[chave] || nome.trim();
+            const fontes = [() => escudoTheSportsDB(termo, '3'), () => escudoTheSportsDB(termo, '123'), () => escudoWikipedia(termo)];
+            let achou = false;
+            for (const fonte of fontes) {
+                try {
+                    const url = await fonte();
+                    if (url && await carregarImagem(url)) {
+                        escudosCache[chave] = url;
+                        try { localStorage.setItem(ESCUDOS_CACHE_KEY, JSON.stringify(escudosCache)); } catch (e) {}
+                        achou = true;
+                        renderizarPartidasPalpites();
+                        break;
+                    }
+                } catch (e) {}
+            }
+            if (!achou) escudosFalhos.add(chave);
+            escudosEmBusca.delete(chave);
+        }
+
+        function recarregarEscudos() {
+            escudosCache = {};
+            escudosFalhos.clear();
+            escudosEmBusca.clear();
+            try { localStorage.removeItem(ESCUDOS_CACHE_KEY); } catch (e) {}
+            renderizarPartidasPalpites();
+            alert("Escudos recarregados. Aguarde alguns segundos.");
+        }
+
+        const DADOS_PADRAO = {
+            amigos: ["Admin"],
+            senhasUsuarios: {},
+            torneios: ["Champions League", "Libertadores", "Brasileirão", "Premier League"],
+            partidas: [],
+            palpites: {},
+            limiteJogosPorAposta: 0,
+            valorPalpite: 10,
+            fechamentoAutomatico: true
+        };
+
+        let dadosApp = JSON.parse(JSON.stringify(DADOS_PADRAO));
+
+        // Garante sempre que "Admin" exista na lista de participantes e tenha senha padrão
+        let houveMigracao = false;
+        function validarGarantiaAdmin(dados) {
+            const base = dados && typeof dados === 'object' ? dados : {};
+            const lista = Array.isArray(base.amigos) ? base.amigos.map(n => String(n || '').trim()).filter(Boolean) : [];
+
+            const idxAdmin = lista.findIndex(nome => nome.toLowerCase() === 'admin');
+            if (idxAdmin === -1) { lista.unshift("Admin"); } else { lista[idxAdmin] = "Admin"; }
+
+            // Senhas: converte texto puro em hash (migração) e garante senha para todos
+            const origem = base.senhasUsuarios && typeof base.senhasUsuarios === 'object' ? base.senhasUsuarios : {};
+            const senhas = {};
+            Object.keys(origem).forEach(k => {
+                const v = origem[k];
+                if (credencialValida(v)) { senhas[k] = v; }
+                else if (v !== undefined && v !== null && String(v).trim() !== "") { senhas[k] = criarCredencial(String(v).trim()); houveMigracao = true; }
+            });
+            lista.forEach(n => { if (!senhas[n]) { senhas[n] = criarCredencial(SENHA_PADRAO); houveMigracao = true; } });
+
+            // Partidas: ids sempre texto e únicos
+            const usados = new Set();
+            const partidas = (Array.isArray(base.partidas) ? base.partidas : []).filter(p => p && typeof p === 'object').map((p, i) => {
+                let id = (p.id === undefined || p.id === null) ? "" : String(p.id);
+                if (!id || usados.has(id)) { id = "jogo_" + Date.now() + "_" + i + "_" + Math.floor(Math.random() * 1000); houveMigracao = true; }
+                usados.add(id);
+                return { ...p, id, casa: String(p.casa || ''), visitante: String(p.visitante || '') };
+            });
+
+            const valor = Number(base.valorPalpite);
+            return {
+                ...JSON.parse(JSON.stringify(DADOS_PADRAO)),
+                ...base,
+                amigos: lista,
+                senhasUsuarios: senhas,
+                torneios: Array.isArray(base.torneios) && base.torneios.length ? base.torneios : [...DADOS_PADRAO.torneios],
+                partidas,
+                palpites: base.palpites && typeof base.palpites === 'object' ? base.palpites : {},
+                limiteJogosPorAposta: Number(base.limiteJogosPorAposta) || 0,
+                valorPalpite: (base.valorPalpite !== undefined && base.valorPalpite !== null && isFinite(valor) && valor >= 0) ? valor : 10,
+                fechamentoAutomatico: base.fechamentoAutomatico !== false
+            };
+        }
+
+        function salvarCacheLocal() {
+            try {
+                localStorage.setItem(CACHE_LOCAL_KEY, JSON.stringify(dadosApp));
+            } catch (e) {}
+        }
+
+        function carregarCacheLocal() {
+            try {
+                const raw = localStorage.getItem(CACHE_LOCAL_KEY);
+                if (raw) {
+                    dadosApp = validarGarantiaAdmin(JSON.parse(raw));
+                } else {
+                    dadosApp = validarGarantiaAdmin(DADOS_PADRAO);
+                }
+            } catch (e) {
+                dadosApp = validarGarantiaAdmin(DADOS_PADRAO);
+            }
+        }
+
+        // CORRIGIDO: preserva a seleção do usuário e só reconstrói se a lista mudou
+        function popularSelectLoginUsuario() {
+            const select = document.getElementById('login-select-usuario');
+            if (!select) return;
+
+            const lista = dadosApp.amigos;
+            const assinatura = lista.join('|');
+            const anterior = select.value;
+
+            if (select.dataset.assinatura === assinatura && select.options.length) return;
+
+            select.innerHTML = lista.map(amigo => {
+                const label = amigo === "Admin" ? "Admin (Administrador)" : amigo;
+                return `<option value="${escapeHtml(amigo)}">${escapeHtml(label)}</option>`;
+            }).join('');
+            select.dataset.assinatura = assinatura;
+
+            if (anterior && lista.includes(anterior)) {
+                select.value = anterior;
+            } else if (usuarioLogado && lista.includes(usuarioLogado)) {
+                select.value = usuarioLogado;
+            } else {
+                select.value = lista[0] || "";
+            }
+        }
+
+        function atualizarInterfaceLogin() {
+            popularSelectLoginUsuario();
+            const modal = document.getElementById('modal-login-usuario');
+            const headerUser = document.getElementById('header-usuario-logado');
+
+            if (usuarioLogado && dadosApp.amigos.includes(usuarioLogado)) {
+                if (modal) modal.classList.add('hidden');
+                if (headerUser) headerUser.textContent = usuarioLogado;
+            } else {
+                usuarioLogado = "";
+                localStorage.removeItem(SESSAO_KEY);
+                if (modal) modal.classList.remove('hidden');
+                if (headerUser) headerUser.textContent = "Usuário";
+            }
+        }
+
+        // CORRIGIDO: compara senha como texto, sem espaços extras
+        function fazerLoginUsuario() {
+            const select = document.getElementById('login-select-usuario');
+            const inputSenha = document.getElementById('login-input-senha');
+            const usuario = select ? select.value : "";
+            const senhaDigitada = inputSenha ? inputSenha.value.trim() : "";
+
+            if (!usuario) { alert("Selecione um participante."); return; }
+
+            const seg = bloqueioLogin();
+            if (seg) { alert(`Muitas tentativas incorretas. Aguarde ${seg}s.`); return; }
+
+            dadosApp = validarGarantiaAdmin(dadosApp);
+            if (!verificarSenha(senhaDigitada, dadosApp.senhasUsuarios[usuario])) {
+                registrarFalhaLogin();
+                alert("Senha incorreta!");
+                return;
+            }
+
+            limparFalhasLogin();
+            usuarioLogado = usuario;
+            salvarSessao();
+            if (inputSenha) inputSenha.value = "";
+            if (ehAdmin()) { adminLogado = true; verPalpitesLogado = true; }
+
+            atualizarInterfaceLogin();
+            renderizarTudo();
+        }
+
+        function sairUsuario() {
+            usuarioLogado = "";
+            adminLogado = false;
+            verPalpitesLogado = false;
+            localStorage.removeItem(SESSAO_KEY);
+            atualizarInterfaceLogin();
+        }
+
+        function atualizarIndicadorStatus(estado, texto) {
+            const dot = document.getElementById('status-nuvem');
+            const label = document.getElementById('texto-status-nuvem');
+            const adminDisplay = document.getElementById('admin-bin-id-display');
+            if (!dot || !label) return;
+
+            if (estado === 'online') {
+                dot.className = "w-2 h-2 rounded-full bg-emerald-400";
+                label.textContent = (texto || "Sincronizado na nuvem") + (ultimaSync ? " • " + formatarDataHora(ultimaSync) : "");
+                label.className = "text-[10px] text-emerald-400 font-medium";
+            } else if (estado === 'sync') {
+                dot.className = "w-2 h-2 rounded-full bg-amber-400 animate-ping";
+                label.textContent = texto || "Sincronizando...";
+                label.className = "text-[10px] text-amber-400 font-medium";
+            } else {
+                dot.className = "w-2 h-2 rounded-full bg-red-500";
+                label.textContent = texto || "Modo Local";
+                label.className = "text-[10px] text-red-400 font-medium";
+            }
+
+            if (adminDisplay) {
+                adminDisplay.textContent = JSONBIN_BIN_ID ? `Bin ID: ${JSONBIN_BIN_ID}` : "Bin ID: Aguardando";
+            }
+        }
+
+        async function buscarNuvemSemCache() {
+            if (!JSONBIN_BIN_ID || !JSONBIN_MASTER_KEY) return null;
+            const url = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest?t=${Date.now()}`;
+            const resp = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "X-Master-Key": JSONBIN_MASTER_KEY,
+                    "X-Bin-Meta": "false"
+                }
+            });
+            if (!resp.ok) throw new Error(await detalheErroHttp(resp));
+            const json = await resp.json();
+            return json && json.record ? json.record : json;
+        }
+
+        async function detalheErroHttp(resp) {
+            let det = "";
+            try { det = (await resp.json()).message || ""; } catch (e) {}
+            return `HTTP ${resp.status} ${det}`.trim();
+        }
+
+        async function salvarNuvem() {
+            dadosApp = validarGarantiaAdmin(dadosApp);
+            salvarCacheLocal();
+            // Marca que existem alterações locais ainda não enviadas à nuvem
+            localStorage.setItem(PENDENTE_KEY, "1");
+            if (!JSONBIN_BIN_ID || !JSONBIN_MASTER_KEY) return false;
+
+            atualizarIndicadorStatus('sync', 'Salvando na nuvem...');
+            try {
+                const resp = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Master-Key": JSONBIN_MASTER_KEY
+                    },
+                    body: JSON.stringify(dadosApp)
+                });
+                if (!resp.ok) throw new Error(await detalheErroHttp(resp));
+                localStorage.removeItem(PENDENTE_KEY);
+                marcarSincronizacao();
+                atualizarIndicadorStatus('online', 'Sincronizado na nuvem');
+                return true;
+            } catch (err) {
+                atualizarIndicadorStatus('offline', 'Falha ao salvar na nuvem');
+                alert("Não foi possível salvar na nuvem. A alteração ficou só neste aparelho.\n\nMotivo: " + err.message);
+                return false;
+            }
+        }
+
+        async function forcarSincronizacaoNuvem(mostrarAlerta = false) {
+            if (sincronizandoAgora) return;
+            sincronizandoAgora = true;
+            atualizarIndicadorStatus('sync', 'Sincronizando...');
+            try {
+                // Alterações locais pendentes têm prioridade: envia antes de baixar
+                if (localStorage.getItem(PENDENTE_KEY)) {
+                    const ok = await salvarNuvem();
+                    if (mostrarAlerta && ok) alert("Alterações locais enviadas para a nuvem!");
+                    renderizarTudo();
+                    return;
+                }
+                const remoto = await buscarNuvemSemCache();
+                if (remoto && typeof remoto === 'object') {
+                    dadosApp = validarGarantiaAdmin(remoto);
+                    salvarCacheLocal();
+                    marcarSincronizacao();
+                atualizarIndicadorStatus('online', 'Sincronizado na nuvem');
+                    // Reavalia o login: a lista de participantes pode ter mudado
+                    atualizarInterfaceLogin();
+                    renderizarTudo();
+                    if (mostrarAlerta) alert("Dados sincronizados com a nuvem!");
+                    if (houveMigracao) { houveMigracao = false; await salvarNuvem(); }
+                } else {
+                    atualizarIndicadorStatus('offline', 'Modo Local');
+                }
+            } catch (err) {
+                atualizarIndicadorStatus('offline', 'Sem conexão com a nuvem');
+                if (mostrarAlerta) alert("Não foi possível conectar à nuvem. Usando dados locais.\n\nMotivo: " + err.message);
+            } finally {
+                sincronizandoAgora = false;
+            }
+        }
+
+        function mudarAba(aba) {
+            if (!ehAdmin() && ['ver-palpites', 'admin'].includes(aba)) aba = 'palpites';
+            abaAtual = aba;
+            const abas = ['palpites', 'ver-palpites', 'ranking', 'regras', 'admin'];
+            abas.forEach(nome => {
+                const painel = document.getElementById(`tab-${nome}`);
+                const btn = document.getElementById(`tab-btn-${nome}`);
+                if (painel) painel.classList.toggle('hidden', nome !== aba);
+                if (btn) {
+                    const oculto = btn.classList.contains('hidden');
+                    btn.className = nome === aba
+                        ? "py-2.5 rounded-lg transition flex flex-col items-center gap-1 bg-emerald-600 text-white shadow"
+                        : "py-2.5 rounded-lg transition flex flex-col items-center gap-1 text-slate-400 hover:text-white";
+                    if (oculto) btn.classList.add('hidden');
+                }
+            });
+            renderizarTudo();
+        }
+
+        function formatarMoeda(v) { return "R$ " + (Number(v) || 0).toFixed(2).replace('.', ','); }
+
+        function contarPalpitesValidos(escolhas) {
+            return dadosApp.partidas.filter(p => escolhas && escolhas[String(p.id)]).length;
+        }
+
+        function calcularPote() {
+            const qtd = Object.keys(dadosApp.palpites || {}).filter(nome => {
+                if (nome === "Admin" || !dadosApp.amigos.includes(nome)) return false;
+                const p = dadosApp.palpites[nome];
+                return p && p.fechado !== false && p.escolhas && Object.keys(p.escolhas).length > 0;
+            }).length;
+            return { qtd, total: Math.round(qtd * (Number(dadosApp.valorPalpite) || 0) * 100) / 100 };
+        }
+
+        function atualizarPote() {
+            const infoQtd = document.getElementById('info-qtd-amigos');
+            const infoPote = document.getElementById('info-pote');
+            const { qtd, total } = calcularPote();
+            if (infoQtd) infoQtd.textContent = `${qtd} participante(s) com palpite fechado • ${formatarMoeda(dadosApp.valorPalpite)} por palpite`;
+            if (infoPote) infoPote.textContent = formatarMoeda(total);
+        }
+
+        function atualizarTextoRegras() {
+            const el = document.getElementById('regra-valor');
+            if (el) el.textContent = formatarMoeda(dadosApp.valorPalpite);
+        }
+
+        function atualizarContadorPalpites() {
+            const el = document.getElementById('info-contador');
+            const est = document.getElementById('info-estado-palpite');
+            const txt = document.getElementById('btn-fechar-palpite-txt');
+            const reg = (usuarioLogado && dadosApp.palpites[usuarioLogado]) || null;
+            const n = contarPalpitesValidos(reg && reg.escolhas);
+            const limite = Number(dadosApp.limiteJogosPorAposta) || 0;
+            const fechado = !!reg && reg.fechado === true;
+            if (el) el.textContent = limite > 0 ? `${n} de ${limite} jogos palpitados` : `${n} jogo${n === 1 ? '' : 's'} palpitado${n === 1 ? '' : 's'} (sem limite)`;
+            if (est) {
+                if (fechado) {
+                    est.className = "text-[11px] font-bold px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30";
+                    est.textContent = `🔒 Fechado em ${formatarDataHora(reg.fechadoEm)}`;
+                } else if (prazoEncerrado()) {
+                    est.className = "text-[11px] font-bold px-2.5 py-1 rounded-lg bg-red-500/10 text-red-400 border border-red-500/30";
+                    est.textContent = "Prazo encerrado";
+                } else {
+                    est.className = "text-[11px] font-bold px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30";
+                    est.textContent = "Em aberto";
+                }
+            }
+            if (txt) txt.textContent = fechado ? "Reenviar Meu Palpite no WhatsApp" : "Fechar e Enviar Meu Palpite";
+        }
+
+        function renderizarPartidasPalpites() {
+            const container = document.getElementById('lista-partidas-palpites');
+            atualizarContadorPalpites();
+            if (!container) return;
+
+            if (!dadosApp.partidas.length) {
+                container.innerHTML = `<div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center text-xs text-slate-400">Nenhuma partida cadastrada no momento.</div>`;
+                return;
+            }
+
+            const reg = (usuarioLogado && dadosApp.palpites[usuarioLogado]) || null;
+            const escolhasUsuario = (reg && reg.escolhas) || {};
+            const travado = (!!reg && reg.fechado === true) || prazoEncerrado();
+            const trava = travado ? 'disabled' : '';
+            const extra = travado ? ' opacity-70 cursor-not-allowed' : '';
+
+            container.innerHTML = dadosApp.partidas.map((partida, i) => {
+                const escolhaAtual = escolhasUsuario[String(partida.id)] || "";
+                const btnClass = (op) => escolhaAtual === op
+                    ? "bg-emerald-600 text-white border-emerald-500 font-bold"
+                    : "bg-slate-800/70 text-slate-300 border-slate-700 hover:bg-slate-800";
+                return `
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                        <div class="flex justify-between items-center text-[10px] text-slate-400">
+                            <span class="font-bold text-emerald-400 uppercase">${escapeHtml(partida.campeonato || 'Campeonato')}</span>
+                            <span>${escapeHtml(partida.data || '')}</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 text-xs">
+                            <button type="button" ${trava} onclick="registrarPalpiteIdx(${i}, 'casa')" class="p-2.5 rounded-xl border transition flex flex-col items-center gap-1 ${btnClass('casa')}${extra}">
+                                <img src="${obterEscudo(partida.casa)}" alt="${escapeHtml(partida.casa)}" data-time="${escapeHtml(partida.casa)}" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src=gerarEscudoVetorial(this.dataset.time)" class="w-8 h-8 object-contain">
+                                <span class="truncate max-w-full">${escapeHtml(partida.casa)}</span>
+                            </button>
+                            <button type="button" ${trava} onclick="registrarPalpiteIdx(${i}, 'empate')" class="p-2.5 rounded-xl border transition flex flex-col items-center justify-center ${btnClass('empate')}${extra}">
+                                <span>Empate</span>
+                            </button>
+                            <button type="button" ${trava} onclick="registrarPalpiteIdx(${i}, 'visitante')" class="p-2.5 rounded-xl border transition flex flex-col items-center gap-1 ${btnClass('visitante')}${extra}">
+                                <img src="${obterEscudo(partida.visitante)}" alt="${escapeHtml(partida.visitante)}" data-time="${escapeHtml(partida.visitante)}" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src=gerarEscudoVetorial(this.dataset.time)" class="w-8 h-8 object-contain">
+                                <span class="truncate max-w-full">${escapeHtml(partida.visitante)}</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function registrarPalpiteIdx(i, escolha) {
+            const partida = dadosApp.partidas[i];
+            if (!partida) return;
+            if (!usuarioLogado) { atualizarInterfaceLogin(); return; }
+            if (prazoEncerrado()) { alert("O prazo para palpites já encerrou."); renderizarPartidasPalpites(); return; }
+            if (!dadosApp.palpites[usuarioLogado]) {
+                dadosApp.palpites[usuarioLogado] = { escolhas: {}, atualizadoEm: new Date().toISOString(), fechado: false };
+            }
+            const reg = dadosApp.palpites[usuarioLogado];
+            if (reg.fechado === true) { alert("Seu palpite já foi fechado e não pode mais ser alterado."); return; }
+            const escolhas = reg.escolhas;
+            const pid = String(partida.id);
+            const limite = Number(dadosApp.limiteJogosPorAposta) || 0;
+
+            if (escolhas[pid] === escolha) {
+                delete escolhas[pid];
+            } else {
+                if (!escolhas[pid] && limite > 0 && contarPalpitesValidos(escolhas) >= limite) {
+                    alert(`Limite de ${limite} palpites por aposta atingido.`);
+                    return;
+                }
+                escolhas[pid] = escolha;
+            }
+            reg.atualizadoEm = new Date().toISOString();
+            if (reg.fechado === undefined) reg.fechado = false;
+            renderizarPartidasPalpites();
+            atualizarPote();
+            await salvarNuvem();
+        }
+
+        function conferirSenhaAdmin(senha) {
+            const seg = bloqueioLogin();
+            if (seg) { alert(`Muitas tentativas incorretas. Aguarde ${seg}s.`); return false; }
+            if (verificarSenha(String(senha).trim(), dadosApp.senhasUsuarios["Admin"])) { limparFalhasLogin(); return true; }
+            registrarFalhaLogin();
+            alert("Senha de administrador incorreta!");
+            return false;
+        }
+
+        function validarSenhaVerPalpites() {
+            const input = document.getElementById('ver-palpites-senha-input');
+            if (input && conferirSenhaAdmin(input.value)) {
+                verPalpitesLogado = true;
+                input.value = "";
+                renderizarVerPalpites();
+            }
+        }
+
+        function listarFinalizados() {
+            return dadosApp.amigos.filter(n => n !== "Admin").map(nome => {
+                const reg = dadosApp.palpites[nome];
+                if (!reg || reg.fechado === false || !reg.escolhas) return null;
+                const jogos = contarPalpitesValidos(reg.escolhas);
+                if (!jogos) return null;
+                return { nome, reg, jogos, quando: reg.fechadoEm || reg.atualizadoEm || "" };
+            }).filter(Boolean).sort((a, b) => String(a.quando).localeCompare(String(b.quando)));
+        }
+
+        function renderizarListaFinalizados() {
+            const corpo = document.getElementById('tabela-finalizados');
+            const resumo = document.getElementById('resumo-finalizados');
+            if (!corpo) return;
+            const lista = listarFinalizados();
+            const { total } = calcularPote();
+            if (resumo) resumo.textContent = `${lista.length} palpite(s) finalizado(s) • Pote ${formatarMoeda(total)} • Toque em uma linha para ver os detalhes`;
+            corpo.innerHTML = lista.length ? lista.map((r, i) => `
+                <tr class="cursor-pointer hover:bg-slate-800/50" onclick="selecionarAmigoPalpites(${i})">
+                    <td class="py-2 px-2 text-center text-slate-400">${i + 1}</td>
+                    <td class="py-2 px-2 font-semibold text-white">${escapeHtml(r.nome)}</td>
+                    <td class="py-2 px-2 text-slate-300">${r.quando ? formatarDataHora(r.quando) : '—'}${r.reg.fechado === true ? '' : ' <span class="text-[10px] text-slate-500">(antigo)</span>'}</td>
+                    <td class="py-2 px-2 text-center text-emerald-400 font-bold">${r.jogos}</td>
+                </tr>`).join('') : `<tr><td colspan="4" class="py-4 text-center text-slate-400">Nenhum palpite finalizado ainda.</td></tr>`;
+        }
+
+        function selecionarAmigoPalpites(i) {
+            const item = listarFinalizados()[i];
+            const select = document.getElementById('select-ver-amigo');
+            if (!item || !select) return;
+            select.value = item.nome;
+            renderizarVerPalpitesAmigo();
+        }
+
+        async function enviarRelatorioPalpitesWhatsApp() {
+            if (!ehAdmin()) { alert("Somente o administrador pode enviar o relatório."); return; }
+            const lista = listarFinalizados();
+            if (!lista.length) { alert("Ainda não há palpites finalizados."); return; }
+            const { total } = calcularPote();
+            let msg = `📋 *BOLÃO DOS AMIGOS — PALPITES FECHADOS*\nGerado em ${formatarDataHora(new Date().toISOString())}\n${lista.length} participante(s) • Pote ${formatarMoeda(total)}\n`;
+            lista.forEach((r, i) => {
+                msg += `\n*${i + 1}. ${r.nome}* — ${r.quando ? formatarDataHora(r.quando) : 'sem data'}\n`;
+                msg += dadosApp.partidas.filter(p => r.reg.escolhas[String(p.id)]).map(p => {
+                    const esc = r.reg.escolhas[String(p.id)];
+                    const rotulo = esc === 'casa' ? p.casa : esc === 'visitante' ? p.visitante : 'Empate';
+                    return `• ${p.casa} x ${p.visitante}: ${rotulo}`;
+                }).join('\n') + '\n';
+            });
+            await enviarTextoWhatsApp(msg);
+        }
+
+        async function adminReabrirPalpiteSelecionado() {
+            const select = document.getElementById('select-ver-amigo');
+            const amigo = select ? select.value : "";
+            const reg = amigo ? dadosApp.palpites[amigo] : null;
+            if (!reg) { alert("Esse participante não tem palpite."); return; }
+            if (reg.fechado !== true) { alert("Esse palpite já está em aberto."); return; }
+            if (!confirm(`Reabrir o palpite de ${amigo}? Ele deixará de contar no pote e no ranking até ser fechado de novo.`)) return;
+            reg.fechado = false;
+            delete reg.fechadoEm;
+            renderizarVerPalpites();
+            atualizarPote();
+            await salvarNuvem();
+        }
+
+        function renderizarVerPalpites() {
+            const boxLogin = document.getElementById('ver-palpites-login-box');
+            const painel = document.getElementById('ver-palpites-painel-conteudo');
+            if (!boxLogin || !painel) return;
+
+            if (!verPalpitesLogado && !ehAdmin()) {
+                boxLogin.classList.remove('hidden');
+                painel.classList.add('hidden');
+                return;
+            }
+
+            boxLogin.classList.add('hidden');
+            painel.classList.remove('hidden');
+
+            const select = document.getElementById('select-ver-amigo');
+            if (select) {
+                const anterior = select.value;
+                select.innerHTML = dadosApp.amigos.filter(a => a !== "Admin").map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join('');
+                if (anterior && dadosApp.amigos.includes(anterior)) select.value = anterior;
+            }
+            renderizarListaFinalizados();
+            renderizarVerPalpitesAmigo();
+        }
+
+        function renderizarVerPalpitesAmigo() {
+            const select = document.getElementById('select-ver-amigo');
+            const infoHora = document.getElementById('info-horario-envio');
+            const lista = document.getElementById('lista-ver-palpites-amigo');
+            if (!select || !lista) return;
+
+            const amigo = select.value;
+            if (!amigo) {
+                if (infoHora) infoHora.textContent = "Nenhum participante cadastrado.";
+                lista.innerHTML = `<p class="text-xs text-slate-400">Sem participantes.</p>`;
+                return;
+            }
+            const registro = dadosApp.palpites[amigo];
+            if (!registro || !registro.escolhas || !Object.keys(registro.escolhas).length) {
+                if (infoHora) infoHora.textContent = `Nenhum palpite registrado para ${amigo}.`;
+                lista.innerHTML = `<p class="text-xs text-slate-400">Sem palpites.</p>`;
+                return;
+            }
+
+            if (infoHora) {
+                const dataFmt = registro.atualizadoEm ? new Date(registro.atualizadoEm).toLocaleString('pt-BR') : 'Não informado';
+                const st = registro.fechado === true ? `Palpite FECHADO em ${formatarDataHora(registro.fechadoEm)}` : (registro.fechado === false ? 'Palpite EM ABERTO (não conta no pote/ranking)' : 'Palpite de formato antigo (conta normalmente)');
+                infoHora.textContent = `${st} • Última atualização: ${dataFmt}`;
+            }
+
+            lista.innerHTML = dadosApp.partidas.map(p => {
+                const esc = registro.escolhas[p.id];
+                if (!esc) return '';
+                const textoEsc = esc === 'casa' ? p.casa : esc === 'visitante' ? p.visitante : 'Empate';
+                return `<div class="flex justify-between items-center text-xs bg-slate-800/60 px-3 py-2 rounded-xl">
+                    <span>${escapeHtml(p.casa)} x ${escapeHtml(p.visitante)}</span>
+                    <strong class="text-emerald-400">${escapeHtml(textoEsc)}</strong>
+                </div>`;
+            }).join('') || `<p class="text-xs text-slate-400">Sem palpites nas partidas atuais.</p>`;
+        }
+
+        async function adminExcluirPalpitesAmigoSelecionado() {
+            const select = document.getElementById('select-ver-amigo');
+            if (!select || !select.value) return;
+            const amigo = select.value;
+            if (!confirmarExclusaoDupla(`todos os palpites de "${amigo}"`)) return;
+            delete dadosApp.palpites[amigo];
+            renderizarVerPalpitesAmigo();
+            atualizarPote();
+            await salvarNuvem();
+        }
+
+        function calcularRanking(filtro) {
+            const partidas = dadosApp.partidas.filter(p => filtro === 'todos' || p.campeonato === filtro);
+            const linhas = dadosApp.amigos.filter(nome => nome !== "Admin").map(nome => {
+                const reg = dadosApp.palpites[nome];
+                const escolhas = (reg && reg.fechado !== false && reg.escolhas) || {};
+                let jogos = 0, acertos = 0;
+                partidas.forEach(p => {
+                    const esc = escolhas[String(p.id)];
+                    if (esc) { jogos++; if (p.resultado && p.resultado === esc) acertos++; }
+                });
+                return { nome, jogos, acertos, pts: acertos };
+            }).sort((a, b) => b.pts - a.pts || a.nome.localeCompare(b.nome));
+            let pos = 0, anterior = null;
+            linhas.forEach((r, i) => { if (r.pts !== anterior) { pos = i + 1; anterior = r.pts; } r.pos = pos; });
+            return linhas;
+        }
+
+        function calcularPremiacao(linhas) {
+            const lideres = linhas.filter(r => r.pos === 1 && r.pts > 0);
+            const { total } = calcularPote();
+            const cada = lideres.length ? Math.floor(Math.round(total * 100) / lideres.length) / 100 : 0;
+            return { lideres, total, cada };
+        }
+
+        function atualizarRanking() {
+            const filtroSelect = document.getElementById('filtro-ranking-comp');
+            const corpo = document.getElementById('tabela-ranking-corpo');
+            if (!corpo) return;
+
+            if (filtroSelect) {
+                const atual = filtroSelect.value;
+                filtroSelect.innerHTML = `<option value="todos">Geral (Todos)</option>` +
+                    dadosApp.torneios.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+                if ([...filtroSelect.options].some(o => o.value === atual)) filtroSelect.value = atual;
+            }
+            const compFiltro = filtroSelect ? filtroSelect.value : 'todos';
+            const linhas = calcularRanking(compFiltro);
+
+            corpo.innerHTML = linhas.map(r => {
+                const lider = r.pos === 1 && r.pts > 0;
+                return `
+                <tr class="${lider ? 'bg-emerald-500/5' : ''}">
+                    <td class="py-2.5 px-2 text-center font-bold ${lider ? 'text-amber-400' : 'text-slate-400'}">${lider ? '🏆 ' : ''}${r.pos}º</td>
+                    <td class="py-2.5 px-2 font-semibold text-white">${escapeHtml(r.nome)}</td>
+                    <td class="py-2.5 px-2 text-center text-slate-300">${r.jogos}</td>
+                    <td class="py-2.5 px-2 text-center text-emerald-400 font-bold">${r.acertos}</td>
+                    <td class="py-2.5 px-2 text-right font-black text-white">${r.pts}</td>
+                </tr>`;
+            }).join('');
+
+            const box = document.getElementById('ranking-premio');
+            if (box) {
+                if (compFiltro !== 'todos') {
+                    box.className = "hidden";
+                } else {
+                    const { lideres, total, cada } = calcularPremiacao(linhas);
+                    box.className = "mb-3 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-xs text-amber-200";
+                    box.innerHTML = lideres.length
+                        ? `🏆 <strong>${lideres.length > 1 ? 'Empate no 1º lugar' : '1º lugar'}:</strong> ${lideres.map(l => escapeHtml(l.nome)).join(', ')}<br>Prêmio${lideres.length > 1 ? ' dividido' : ''}: <strong>${formatarMoeda(cada)}</strong>${lideres.length > 1 ? ' para cada' : ''} <span class="opacity-70">(pote ${formatarMoeda(total)})</span>`
+                        : `💰 Pote em jogo: <strong>${formatarMoeda(total)}</strong> — aguardando resultados.`;
+                }
+            }
+            const btn = document.getElementById('btn-enviar-ranking');
+            if (btn) { btn.classList.toggle('hidden', !ehAdmin()); btn.classList.toggle('flex', ehAdmin()); }
+        }
+
+        async function enviarRankingWhatsApp() {
+            if (!ehAdmin()) { alert("Somente o administrador pode enviar o ranking."); return; }
+            const filtroSelect = document.getElementById('filtro-ranking-comp');
+            const filtro = filtroSelect ? filtroSelect.value : 'todos';
+            const linhas = calcularRanking(filtro);
+            if (!linhas.length) { alert("Não há participantes no ranking."); return; }
+            const medalhas = { 1: '🥇', 2: '🥈', 3: '🥉' };
+            let msg = `🏆 *BOLÃO DOS AMIGOS — RANKING*\n_${filtro === 'todos' ? 'Geral' : filtro}_ • ${formatarDataHora(new Date().toISOString())}\n\n`;
+            msg += linhas.map(r => `${medalhas[r.pos] || ''} ${r.pos}º *${r.nome}* — ${r.pts} pt(s) (${r.acertos}/${r.jogos} jogos)`.trim()).join('\n');
+            if (filtro === 'todos') {
+                const { lideres, total, cada } = calcularPremiacao(linhas);
+                msg += `\n\n💰 Pote: ${formatarMoeda(total)}`;
+                if (lideres.length) {
+                    msg += `\n🏆 ${lideres.length > 1 ? 'Empate no 1º: ' : '1º lugar: '}${lideres.map(l => l.nome).join(', ')}\nPrêmio${lideres.length > 1 ? ' dividido' : ''}: ${formatarMoeda(cada)}${lideres.length > 1 ? ' para cada' : ''}`;
+                }
+            }
+            await enviarTextoWhatsApp(msg);
+        }
+
+        function validarSenhaAdmin() {
+            const input = document.getElementById('admin-senha-input');
+            if (input && conferirSenhaAdmin(input.value)) {
+                adminLogado = true;
+                input.value = "";
+                renderizarAdmin();
+            }
+        }
+
+        function sairAdmin() {
+            adminLogado = false;
+            renderizarAdmin();
+        }
+
+        let cachePadrao = { cred: "", res: false };
+        function adminUsaSenhaPadrao() {
+            const cred = dadosApp.senhasUsuarios["Admin"];
+            if (cachePadrao.cred !== cred) cachePadrao = { cred, res: verificarSenha(SENHA_PADRAO, cred) };
+            return cachePadrao.res;
+        }
+
+        function renderizarAdmin() {
+            const loginBox = document.getElementById('admin-login-box');
+            const painel = document.getElementById('admin-painel-conteudo');
+            if (!loginBox || !painel) return;
+
+            if (!adminLogado && !ehAdmin()) {
+                loginBox.classList.remove('hidden');
+                painel.classList.add('hidden');
+                return;
+            }
+
+            loginBox.classList.add('hidden');
+            painel.classList.remove('hidden');
+
+            const aviso = document.getElementById('aviso-senha-admin');
+            if (aviso) aviso.classList.toggle('hidden', !adminUsaSenhaPadrao());
+
+            const inputValor = document.getElementById('input-valor-palpite');
+            if (inputValor && document.activeElement !== inputValor) inputValor.value = dadosApp.valorPalpite;
+            const inputLimite = document.getElementById('input-limite-jogos');
+            if (inputLimite && document.activeElement !== inputLimite) inputLimite.value = dadosApp.limiteJogosPorAposta || 0;
+
+            const infoPrazo2 = document.getElementById('admin-prazo-info');
+            const btnPrazo = document.getElementById('btn-toggle-prazo');
+            const ip = infoPrazo();
+            if (infoPrazo2) {
+                infoPrazo2.textContent = !dadosApp.fechamentoAutomatico
+                    ? "Fechamento automático DESATIVADO: os palpites ficam liberados."
+                    : ip.ativo ? `Palpites encerram em ${formatarDataHora(ip.limite.toISOString())} (2h antes do 1º jogo, em ${formatarDataHora(ip.primeiro.toISOString())}).`
+                               : "Cadastre partidas com data e hora para definir o prazo.";
+            }
+            if (btnPrazo) btnPrazo.textContent = dadosApp.fechamentoAutomatico ? "Desativar fechamento automático" : "Ativar fechamento automático";
+
+            const selectComp = document.getElementById('novo-campeonato');
+            if (selectComp) {
+                selectComp.innerHTML = dadosApp.torneios.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+            }
+
+            const listaTorneios = document.getElementById('lista-admin-torneios');
+            if (listaTorneios) {
+                listaTorneios.innerHTML = dadosApp.torneios.map((t, i) => `
+                    <div class="flex justify-between items-center text-xs bg-slate-800/60 px-3 py-1.5 rounded-lg">
+                        <span>${escapeHtml(t)}</span>
+                        <button type="button" onclick="removerTorneio(${i})" class="text-red-400 hover:underline text-[11px]">Remover</button>
+                    </div>
+                `).join('');
+            }
+
+            const listaPartidas = document.getElementById('lista-admin-partidas');
+            if (listaPartidas) {
+                listaPartidas.innerHTML = dadosApp.partidas.map((p, i) => `
+                    <div class="bg-slate-800/60 p-3 rounded-xl space-y-2 text-xs">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-white">${escapeHtml(p.casa)} x ${escapeHtml(p.visitante)} <span class="text-slate-400 font-normal text-[10px]">${escapeHtml(p.data || '')}</span></span>
+                            <button type="button" onclick="removerPartidaIdx(${i})" class="text-red-400 text-[11px]">Excluir</button>
+                        </div>
+                        <div class="flex gap-1.5">
+                            ${['casa', 'empate', 'visitante'].map(op => {
+                                const rotulo = op === 'casa' ? p.casa : op === 'visitante' ? p.visitante : 'Empate';
+                                const ativo = p.resultado === op ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-300';
+                                return `<button type="button" onclick="definirResultadoIdx(${i}, '${op}')" class="flex-1 py-1.5 rounded-lg font-bold text-[11px] ${ativo}">${escapeHtml(rotulo)}</button>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                `).join('') || `<p class="text-xs text-slate-400">Nenhuma partida cadastrada.</p>`;
+            }
+
+            const listaAmigos = document.getElementById('lista-admin-amigos');
+            if (listaAmigos) {
+                listaAmigos.innerHTML = dadosApp.amigos.map((nome, i) => `
+                    <div class="flex justify-between items-center gap-2 text-xs bg-slate-800/60 px-3 py-1.5 rounded-lg">
+                        <span><strong>${escapeHtml(nome)}</strong> <span class="text-slate-400 text-[10px]">🔒 senha protegida</span></span>
+                        <span class="flex gap-3 shrink-0">
+                            <button type="button" onclick="redefinirSenhaPorIndice(${i})" class="text-amber-400 hover:underline text-[11px]">Redefinir senha</button>
+                            ${nome !== "Admin" ? `<button type="button" onclick="removerAmigoPorIndice(${i})" class="text-red-400 hover:underline text-[11px]">Remover</button>` : `<span class="text-[10px] text-emerald-400">Principal</span>`}
+                        </span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        async function salvarLimiteJogos() {
+            const val = parseInt(document.getElementById('input-limite-jogos')?.value || "0", 10);
+            dadosApp.limiteJogosPorAposta = isNaN(val) || val < 0 ? 0 : val;
+            await salvarNuvem();
+            alert("Limite salvo!");
+        }
+
+        async function definirResultadoIdx(i, resultado) {
+            const p = dadosApp.partidas[i];
+            if (!p) return;
+            p.resultado = p.resultado === resultado ? "" : resultado;
+            renderizarAdmin();
+            atualizarRanking();
+            await salvarNuvem();
+        }
+
+        async function removerPartidaIdx(i) {
+            const alvo = dadosApp.partidas[i];
+            if (!alvo) return;
+            if (!confirmarExclusaoDupla(`a partida "${alvo.casa} x ${alvo.visitante}"`)) return;
+            dadosApp.partidas.splice(i, 1);
+            renderizarTudo();
+            await salvarNuvem();
+        }
+
+        async function zerarRanking() {
+            if (!confirmarExclusaoDupla("TODOS os resultados e palpites da rodada (zerar ranking)")) return;
+            dadosApp.partidas.forEach(p => { p.resultado = ""; });
+            dadosApp.palpites = {};
+            renderizarTudo();
+            await salvarNuvem();
+        }
+
+        async function adicionarTorneio() {
+            const input = document.getElementById('input-novo-torneio');
+            const nome = input ? input.value.trim() : "";
+            if (!nome) return;
+            if (!dadosApp.torneios.includes(nome)) dadosApp.torneios.push(nome);
+            input.value = "";
+            renderizarAdmin();
+            atualizarRanking();
+            await salvarNuvem();
+        }
+
+        async function removerTorneio(idx) {
+            const nomeTorneio = dadosApp.torneios[idx];
+            if (nomeTorneio === undefined) return;
+            if (!confirmarExclusaoDupla(`o torneio "${nomeTorneio}"`)) return;
+            dadosApp.torneios.splice(idx, 1);
+            if (!dadosApp.torneios.length) dadosApp.torneios = ["Campeonato"];
+            renderizarAdmin();
+            atualizarRanking();
+            await salvarNuvem();
+        }
+
+        async function adicionarNovaPartida() {
+            const casa = document.getElementById('novo-time-casa')?.value.trim();
+            const visitante = document.getElementById('novo-time-visitante')?.value.trim();
+            const campeonato = document.getElementById('novo-campeonato')?.value || "Campeonato";
+            const dataBruta = document.getElementById('nova-data-jogo')?.value || "";
+            const dt = new Date(dataBruta);
+            if (!dataBruta || isNaN(dt)) {
+                alert("Informe a data e a hora do jogo.");
+                return;
+            }
+            const inicioISO = dt.toISOString();
+            const dataTxt = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + " • " + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+            if (!casa || !visitante) {
+                alert("Preencha o time da casa e o visitante.");
+                return;
+            }
+
+            dadosApp.partidas.push({
+                id: "jogo_" + Date.now(),
+                casa,
+                visitante,
+                campeonato,
+                data: dataTxt,
+                inicio: inicioISO,
+                resultado: ""
+            });
+
+            document.getElementById('novo-time-casa').value = "";
+            document.getElementById('novo-time-visitante').value = "";
+            document.getElementById('nova-data-jogo').value = "";
+
+            renderizarTudo();
+            await salvarNuvem();
+        }
+
+        async function adicionarAmigoComSenha() {
+            const inputNome = document.getElementById('input-novo-amigo');
+            const inputSenha = document.getElementById('input-senha-amigo');
+            const nome = inputNome ? inputNome.value.trim() : "";
+            let senha = inputSenha ? inputSenha.value.trim() : "";
+
+            if (!nome) { alert("Digite o nome do participante."); return; }
+            if (dadosApp.amigos.some(a => a.toLowerCase() === nome.toLowerCase())) {
+                alert("Esse participante já existe. Use \"Redefinir senha\" para trocar a senha dele.");
+                return;
+            }
+            if (!senha) senha = String(Math.floor(100000 + Math.random() * 900000));
+
+            dadosApp.amigos.push(nome);
+            dadosApp.senhasUsuarios[nome] = criarCredencial(senha);
+
+            inputNome.value = "";
+            inputSenha.value = "";
+            popularSelectLoginUsuario();
+            renderizarAdmin();
+            atualizarRanking();
+            await salvarNuvem();
+            alert(`Participante "${nome}" cadastrado.\n\nSenha: ${senha}\n\nAnote agora: por segurança a senha não poderá ser vista depois.`);
+        }
+
+        async function redefinirSenhaPorIndice(idx) {
+            const nome = dadosApp.amigos[idx];
+            if (!nome) return;
+            const nova = prompt(`Nova senha para "${nome}" (mínimo 4 caracteres):`);
+            if (nova === null) return;
+            const senha = nova.trim();
+            if (senha.length < 4) { alert("A senha precisa ter pelo menos 4 caracteres."); return; }
+            dadosApp.senhasUsuarios[nome] = criarCredencial(senha);
+            if (nome === usuarioLogado) salvarSessao();
+            renderizarAdmin();
+            await salvarNuvem();
+            alert(`Senha de "${nome}" alterada.`);
+        }
+
+        async function salvarValorPalpite() {
+            const input = document.getElementById('input-valor-palpite');
+            const v = parseFloat(String(input ? input.value : "").replace(',', '.'));
+            if (!isFinite(v) || v < 0) { alert("Informe um valor válido."); return; }
+            dadosApp.valorPalpite = Math.round(v * 100) / 100;
+            atualizarPote();
+            atualizarTextoRegras();
+            await salvarNuvem();
+            alert("Valor por palpite salvo!");
+        }
+
+        async function alternarFechamentoAutomatico() {
+            dadosApp.fechamentoAutomatico = !dadosApp.fechamentoAutomatico;
+            renderizarTudo();
+            await salvarNuvem();
+        }
+
+        async function removerAmigoPorIndice(idx) {
+            const nome = dadosApp.amigos[idx];
+            if (!nome || nome === "Admin") return;
+            if (!confirmarExclusaoDupla(`o participante "${nome}" (com senha e palpites)`)) return;
+            dadosApp.amigos = dadosApp.amigos.filter(a => a !== nome);
+            delete dadosApp.senhasUsuarios[nome];
+            delete dadosApp.palpites[nome];
+            popularSelectLoginUsuario();
+            renderizarAdmin();
+            atualizarRanking();
+            await salvarNuvem();
+        }
+
+        function resetarCacheLocal() {
+            if (!confirmarExclusaoDupla("o cache local deste aparelho")) return;
+            localStorage.removeItem(CACHE_LOCAL_KEY);
+            localStorage.removeItem(PENDENTE_KEY);
+            localStorage.removeItem(SESSAO_KEY);
+            usuarioLogado = "";
+            dadosApp = validarGarantiaAdmin(DADOS_PADRAO);
+            // Força a reconstrução do select de login
+            document.getElementById('login-select-usuario')?.removeAttribute('data-assinatura');
+            atualizarInterfaceLogin();
+            renderizarTudo();
+            alert("Cache local limpo!");
+        }
+
+        function abrirModalImportar() {
+            document.getElementById('modal-importar')?.classList.remove('hidden');
+        }
+
+        function fecharModalImportar() {
+            document.getElementById('modal-importar')?.classList.add('hidden');
+        }
+
+        async function processarImportacaoWhatsApp() {
+            if (!usuarioLogado) {
+                atualizarInterfaceLogin();
+                return;
+            }
+            const texto = document.getElementById('textarea-whatsapp')?.value || "";
+            const linhas = texto.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+            if (!linhas.length) {
+                alert("Cole o texto do palpite antes de importar.");
+                return;
+            }
+
+            if (!dadosApp.palpites[usuarioLogado]) {
+                dadosApp.palpites[usuarioLogado] = { escolhas: {}, atualizadoEm: new Date().toISOString() };
+            }
+
+            if (dadosApp.palpites[usuarioLogado].fechado === true) { alert("Seu palpite já está fechado."); return; }
+            if (prazoEncerrado()) { alert("O prazo para palpites já encerrou."); return; }
+            let importados = 0;
+            dadosApp.partidas.forEach(p => {
+                const linhaMatch = linhas.find(l =>
+                    l.toLowerCase().includes(p.casa.toLowerCase()) &&
+                    l.toLowerCase().includes(p.visitante.toLowerCase())
+                );
+                if (linhaMatch) {
+                    const lower = linhaMatch.toLowerCase();
+                    if (lower.includes("empate")) {
+                        dadosApp.palpites[usuarioLogado].escolhas[p.id] = "empate";
+                        importados++;
+                    } else if (lower.includes(p.casa.toLowerCase() + " vence") || lower.includes("-> " + p.casa.toLowerCase())) {
+                        dadosApp.palpites[usuarioLogado].escolhas[p.id] = "casa";
+                        importados++;
+                    } else if (lower.includes(p.visitante.toLowerCase() + " vence") || lower.includes("-> " + p.visitante.toLowerCase())) {
+                        dadosApp.palpites[usuarioLogado].escolhas[p.id] = "visitante";
+                        importados++;
+                    }
+                }
+            });
+
+            dadosApp.palpites[usuarioLogado].atualizadoEm = new Date().toISOString();
+            fecharModalImportar();
+            renderizarPartidasPalpites();
+            atualizarPote();
+            await salvarNuvem();
+            alert(`${importados} palpite(s) importado(s) para ${usuarioLogado}.`);
+        }
+
+        async function enviarTextoWhatsApp(texto) {
+            const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+            if (url.length <= 3500) {
+                const w = window.open(url, "_blank");
+                if (!w) alert("O navegador bloqueou a abertura do WhatsApp. Toque no botão novamente.");
+                return;
+            }
+            let copiado = false;
+            try { await navigator.clipboard.writeText(texto); copiado = true; } catch (e) {}
+            if (navigator.share) {
+                try { await navigator.share({ text: texto }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+            }
+            window.open("https://wa.me/", "_blank");
+            alert(copiado ? "A mensagem é grande e foi copiada. Cole na conversa do WhatsApp." : "A mensagem é grande demais para o link do WhatsApp.");
+        }
+
+        async function gerarComprovanteWhatsApp() {
+            if (!usuarioLogado) { atualizarInterfaceLogin(); return; }
+            const reg = dadosApp.palpites[usuarioLogado];
+            const escolhas = (reg && reg.escolhas) || {};
+            const itens = dadosApp.partidas.filter(p => escolhas[String(p.id)]).map(p => {
+                const esc = escolhas[String(p.id)];
+                const rotulo = esc === 'casa' ? `${p.casa} vence` : esc === 'visitante' ? `${p.visitante} vence` : "Empate";
+                return `• ${p.casa} x ${p.visitante}: *${rotulo}*`;
+            });
+            if (!itens.length) { alert("Selecione pelo menos um palpite antes de enviar."); return; }
+
+            if (!(reg && reg.fechado === true)) {
+                if (prazoEncerrado()) { alert("O prazo para fechar palpites já encerrou."); return; }
+                const limite = Number(dadosApp.limiteJogosPorAposta) || 0;
+                const resumo = limite > 0 ? `${itens.length} de ${limite} jogos` : `${itens.length} jogo(s)`;
+                if (!confirm(`Deseja fechar o seu palpite com ${resumo}?\n\nDepois de fechado, ele não poderá ser alterado.`)) return;
+                if (!confirm(`⚠️ SEGUNDA CONFIRMAÇÃO\n\nFechar DEFINITIVAMENTE o palpite de ${usuarioLogado}?\nValor da aposta: ${formatarMoeda(dadosApp.valorPalpite)}\n\nEsta ação não pode ser desfeita por você.`)) return;
+                reg.fechado = true;
+                reg.fechadoEm = new Date().toISOString();
+                reg.atualizadoEm = reg.fechadoEm;
+                renderizarPartidasPalpites();
+                atualizarPote();
+                await salvarNuvem();
+            }
+
+            const quando = formatarDataHora(reg.fechadoEm || new Date().toISOString());
+            const msg = `🏆 *BOLÃO DOS AMIGOS*\nParticipante: *${usuarioLogado}*\nFechado em: ${quando}\nValor: ${formatarMoeda(dadosApp.valorPalpite)}\n\n${itens.join('\n')}`;
+            await enviarTextoWhatsApp(msg);
+        }
+
+
+
+        function renderizarTudo() {
+            dadosApp = validarGarantiaAdmin(dadosApp);
+            popularSelectLoginUsuario();
+            atualizarAbasPorPerfil();
+            atualizarPote();
+            atualizarPrazo();
+            renderizarPartidasPalpites();
+            atualizarRanking();
+            atualizarTextoRegras();
+            if (abaAtual === 'ver-palpites') renderizarVerPalpites();
+            if (abaAtual === 'admin') renderizarAdmin();
+        }
+
+        // ===== Prazo: palpites encerram 2h antes do primeiro jogo =====
+        function inicioPartida(p) {
+            if (p.inicio) { const d = new Date(p.inicio); if (!isNaN(d)) return d; }
+            const m = String(p.data || '').match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\D+(\d{1,2})[:hH](\d{2})/);
+            if (!m) return null;
+            const agora = new Date();
+            let ano = m[3] ? Number(m[3]) : agora.getFullYear();
+            if (ano < 100) ano += 2000;
+            let d = new Date(ano, Number(m[2]) - 1, Number(m[1]), Number(m[4]), Number(m[5]));
+            if (!m[3] && d < new Date(agora.getTime() - 60 * 86400000)) d = new Date(ano + 1, Number(m[2]) - 1, Number(m[1]), Number(m[4]), Number(m[5]));
+            return isNaN(d) ? null : d;
+        }
+
+        function infoPrazo() {
+            if (!dadosApp.fechamentoAutomatico) return { ativo: false };
+            const inicios = dadosApp.partidas.map(inicioPartida).filter(Boolean);
+            if (!inicios.length) return { ativo: false };
+            const primeiro = new Date(Math.min(...inicios.map(d => d.getTime())));
+            const limite = new Date(primeiro.getTime() - 2 * 3600000);
+            const restante = limite.getTime() - Date.now();
+            return { ativo: true, primeiro, limite, restante, encerrado: restante <= 0 };
+        }
+
+        function prazoEncerrado() { const i = infoPrazo(); return i.ativo && i.encerrado; }
+
+        function formatarRestante(ms) {
+            const min = Math.max(0, Math.floor(ms / 60000));
+            const d = Math.floor(min / 1440), h = Math.floor((min % 1440) / 60), m = min % 60;
+            return d > 0 ? `${d}d ${h}h ${String(m).padStart(2, '0')}min` : `${h}h ${String(m).padStart(2, '0')}min`;
+        }
+
+        let ultimoEstadoPrazo = null;
+        function atualizarPrazo() {
+            const card = document.getElementById('card-prazo');
+            const info = infoPrazo();
+            if (card) {
+                if (!info.ativo) {
+                    card.className = "hidden";
+                } else {
+                    const quando = `${info.limite.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} às ${info.limite.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+                    if (info.encerrado) {
+                        card.className = "bg-red-500/10 border border-red-500/30 rounded-2xl p-3 text-xs text-red-300";
+                        card.innerHTML = `🔒 <strong>Palpites encerrados.</strong> O prazo terminou em ${quando} (2h antes do 1º jogo).`;
+                    } else {
+                        const urgente = info.restante < 3 * 3600000;
+                        card.className = urgente
+                            ? "bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3 text-xs text-amber-200"
+                            : "bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-3 text-xs text-emerald-200";
+                        card.innerHTML = `⏳ <strong>Faltam ${formatarRestante(info.restante)}</strong> para encerrar os palpites <span class="opacity-70">(até ${quando})</span>`;
+                    }
+                }
+            }
+            const estado = info.ativo ? info.encerrado : false;
+            if (ultimoEstadoPrazo !== null && ultimoEstadoPrazo !== estado) renderizarPartidasPalpites();
+            ultimoEstadoPrazo = estado;
+        }
+
+        // ===== Abas por perfil =====
+        function atualizarAbasPorPerfil() {
+            const admin = ehAdmin();
+            ['ver-palpites', 'admin'].forEach(n => document.getElementById(`tab-btn-${n}`)?.classList.toggle('hidden', !admin));
+            const barra = document.getElementById('barra-abas');
+            if (barra) { barra.classList.toggle('grid-cols-5', admin); barra.classList.toggle('grid-cols-3', !admin); }
+            if (!admin && ['ver-palpites', 'admin'].includes(abaAtual)) mudarAba('palpites');
+        }
+
+        // ===== Instalação (PWA) =====
+        let promptInstalacao = null;
+        window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); promptInstalacao = e; atualizarCardInstalacao(); });
+        window.addEventListener('appinstalled', () => { promptInstalacao = null; atualizarCardInstalacao(); });
+
+        function ehStandalone() {
+            return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        }
+
+        function atualizarCardInstalacao() {
+            const card = document.getElementById('card-instalar');
+            const btn = document.getElementById('btn-instalar');
+            const dica = document.getElementById('dica-instalar');
+            if (!card) return;
+            if (ehStandalone()) { card.classList.add('hidden'); return; }
+            card.classList.remove('hidden');
+            const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+            if (promptInstalacao) {
+                btn.classList.remove('hidden');
+                dica.textContent = "Instale o Bolão na tela inicial para abrir como um aplicativo.";
+            } else {
+                btn.classList.add('hidden');
+                dica.textContent = ios
+                    ? "No iPhone/iPad: toque em Compartilhar e depois em “Adicionar à Tela de Início”."
+                    : "No menu do navegador (⋮), escolha “Instalar app” ou “Adicionar à tela inicial”.";
+            }
+        }
+
+        async function instalarApp() {
+            if (!promptInstalacao) return;
+            promptInstalacao.prompt();
+            try { await promptInstalacao.userChoice; } catch (e) {}
+            promptInstalacao = null;
+            atualizarCardInstalacao();
+        }
+
+        function abaPorHash() {
+            const h = (location.hash || "").replace('#', '');
+            if (['palpites', 'ver-palpites', 'ranking', 'regras', 'admin'].includes(h)) mudarAba(h);
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            try { localStorage.removeItem('bolao_usuario_logado'); } catch (e) {}
+            document.getElementById('login-input-senha')?.addEventListener('keydown', e => {
+                if (e.key === 'Enter') fazerLoginUsuario();
+            });
+
+            carregarCacheLocal();
+            restaurarSessao();
+            atualizarInterfaceLogin();
+            renderizarTudo();
+            abaPorHash();
+            atualizarCardInstalacao();
+            setInterval(atualizarPrazo, 30000);
+            forcarSincronizacaoNuvem(false);
+        });
+        window.addEventListener('hashchange', abaPorHash);
+
+        if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+            window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+        }
+    </script>
+</body>
+</html>
