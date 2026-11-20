@@ -167,12 +167,13 @@
                         </table>
                     </div>
                 </div>
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+                <div data-card="galera" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
                     <div class="flex justify-between items-center flex-wrap gap-2">
                         <h2 class="text-sm font-bold text-white flex items-center gap-2">
                             <i class="fa-solid fa-eye text-emerald-400"></i> Palpites da Galera
                         </h2>
                         <div class="flex items-center gap-2">
+                            <button type="button" data-toggle-card onclick="alternarCard(this)" class="text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg shrink-0" title="Recolher / expandir"><i class="fa-solid fa-chevron-up"></i></button>
                             <select id="select-ver-amigo" onchange="renderizarVerPalpitesAmigo()" class="bg-slate-800 border border-slate-700 text-xs font-bold text-emerald-400 rounded-lg px-2.5 py-1.5 focus:outline-none">
                             </select>
                             <button type="button" onclick="adminReabrirPalpiteSelecionado()" class="bg-amber-600/20 hover:bg-amber-600/30 text-amber-400 border border-amber-500/30 text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5" title="Reabrir palpite para edição">
@@ -247,7 +248,7 @@
                     </div>
                     <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800">
                         <strong class="text-white block mb-1">⏰ Prazo</strong>
-                        Os palpites encerram <strong>2 horas antes</strong> do início do primeiro jogo cadastrado.
+                        Os palpites encerram <strong>2 horas antes</strong> do início do primeiro jogo.
                     </div>
                 </div>
                 <div id="card-instalar" class="border-t border-slate-800 pt-4 space-y-2">
@@ -312,12 +313,12 @@
                     </div>
                 </div>
 
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+                <div data-card="resultados" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
                     <div class="flex justify-between items-center border-b border-slate-800 pb-2">
                         <h2 class="text-sm font-bold text-white flex items-center gap-2">
                             <i class="fa-solid fa-whistle text-emerald-400"></i> Lançar Resultado Oficial
                         </h2>
-                        <button type="button" onclick="sairAdmin()" class="text-[10px] text-red-400 hover:underline font-bold">Sair / Bloquear</button>
+                        <button type="button" data-toggle-card onclick="alternarCard(this)" class="text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg shrink-0" title="Recolher / expandir"><i class="fa-solid fa-chevron-up"></i></button>
                     </div>
                     <div id="lista-admin-partidas" class="space-y-2.5"></div>
                 </div>
@@ -328,8 +329,8 @@
                     <button type="button" onclick="zerarRanking()" class="w-full bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold py-2.5 rounded-xl transition shadow">Zerar Ranking e Pontuações</button>
                 </div>
 
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
-                    <h3 class="text-xs font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-trophy text-emerald-400"></i> Gerenciar Torneios / Campeonatos</h3>
+                <div data-card="torneios" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                    <div class="flex justify-between items-center"><h3 class="text-xs font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-trophy text-emerald-400"></i> Gerenciar Torneios / Campeonatos</h3><button type="button" data-toggle-card onclick="alternarCard(this)" class="text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg shrink-0" title="Recolher / expandir"><i class="fa-solid fa-chevron-up"></i></button></div>
                     <div class="flex gap-2">
                         <input type="text" id="input-novo-torneio" placeholder="Nome do torneio (ex: Paulistão)..." class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 flex-grow text-white">
                         <button type="button" onclick="adicionarTorneio()" class="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-xl">Criar</button>
@@ -337,8 +338,8 @@
                     <div id="lista-admin-torneios" class="space-y-1.5 pt-2 border-t border-slate-800 max-h-40 overflow-y-auto"></div>
                 </div>
 
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
-                    <h3 class="text-xs font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-futbol text-emerald-400"></i> Adicionar Nova Partida</h3>
+                <div data-card="nova-partida" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                    <div class="flex justify-between items-center"><h3 class="text-xs font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-futbol text-emerald-400"></i> Adicionar Nova Partida</h3><button type="button" data-toggle-card onclick="alternarCard(this)" class="text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg shrink-0" title="Recolher / expandir"><i class="fa-solid fa-chevron-up"></i></button></div>
                     <div class="grid grid-cols-2 gap-2">
                         <input type="text" id="novo-time-casa" placeholder="Time Casa (ex: Flamengo)" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white">
                         <input type="text" id="novo-time-visitante" placeholder="Visitante (ex: Vasco)" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white">
@@ -351,8 +352,8 @@
                     <button type="button" id="btn-add-partida" onclick="adicionarNovaPartida()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl transition">Cadastrar Partida</button>
                 </div>
 
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
-                    <h3 class="text-xs font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-users text-emerald-400"></i> Gerenciar Participantes e Senhas</h3>
+                <div data-card="participantes" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                    <div class="flex justify-between items-center"><h3 class="text-xs font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-users text-emerald-400"></i> Gerenciar Participantes e Senhas</h3><button type="button" data-toggle-card onclick="alternarCard(this)" class="text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg shrink-0" title="Recolher / expandir"><i class="fa-solid fa-chevron-up"></i></button></div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <input type="text" id="input-novo-amigo" placeholder="Nome do participante..." class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white">
                         <input type="text" id="input-senha-amigo" placeholder="Senha de acesso..." class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white">
@@ -1217,21 +1218,35 @@
                 return;
             }
 
+            const rotuloDe = (p, op) => op === 'casa' ? p.casa : op === 'visitante' ? p.visitante : 'Empate';
+            let acertos = 0, erros = 0;
+            const linhas = dadosApp.partidas.map(p => {
+                const esc = registro.escolhas[String(p.id)];
+                if (!esc) return '';
+                let selo;
+                if (p.resultado) {
+                    if (esc === p.resultado) { acertos++; selo = `<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">✅ Acertou</span>`; }
+                    else { erros++; selo = `<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-red-500/15 text-red-400 border border-red-500/30">❌ Errou</span>`; }
+                } else {
+                    selo = `<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-700/60 text-slate-300 border border-slate-600">⏳ Aguardando</span>`;
+                }
+                const oficial = p.resultado ? `<span class="block text-[10px] text-slate-400 mt-0.5">Resultado: ${escapeHtml(rotuloDe(p, p.resultado))}</span>` : '';
+                return `<div class="flex justify-between items-center gap-2 text-xs bg-slate-800/60 px-3 py-2 rounded-xl">
+                    <span class="min-w-0">
+                        <span class="block truncate">${escapeHtml(p.casa)} x ${escapeHtml(p.visitante)}</span>
+                        <strong class="text-emerald-400">${escapeHtml(rotuloDe(p, esc))}</strong>
+                        ${oficial}
+                    </span>
+                    ${selo}
+                </div>`;
+            });
+
             if (infoHora) {
                 const dataFmt = registro.atualizadoEm ? new Date(registro.atualizadoEm).toLocaleString('pt-BR') : 'Não informado';
                 const st = registro.fechado === true ? `Palpite FECHADO em ${formatarDataHora(registro.fechadoEm)}` : (registro.fechado === false ? 'Palpite EM ABERTO (não conta no pote/ranking)' : 'Palpite de formato antigo (conta normalmente)');
-                infoHora.textContent = `${st} • Última atualização: ${dataFmt}`;
+                infoHora.textContent = `${st} • Última atualização: ${dataFmt} • ✅ ${acertos} acerto(s) • ❌ ${erros} erro(s)`;
             }
-
-            lista.innerHTML = dadosApp.partidas.map(p => {
-                const esc = registro.escolhas[p.id];
-                if (!esc) return '';
-                const textoEsc = esc === 'casa' ? p.casa : esc === 'visitante' ? p.visitante : 'Empate';
-                return `<div class="flex justify-between items-center text-xs bg-slate-800/60 px-3 py-2 rounded-xl">
-                    <span>${escapeHtml(p.casa)} x ${escapeHtml(p.visitante)}</span>
-                    <strong class="text-emerald-400">${escapeHtml(textoEsc)}</strong>
-                </div>`;
-            }).join('') || `<p class="text-xs text-slate-400">Sem palpites nas partidas atuais.</p>`;
+            lista.innerHTML = linhas.join('') || `<p class="text-xs text-slate-400">Sem palpites nas partidas atuais.</p>`;
         }
 
         async function adminExcluirPalpitesAmigoSelecionado() {
@@ -1339,10 +1354,7 @@
             }
         }
 
-        function sairAdmin() {
-            adminLogado = false;
-            renderizarAdmin();
-        }
+
 
         let cachePadrao = { cred: "", res: false };
         function adminUsaSenhaPadrao() {
@@ -1401,7 +1413,7 @@
 
             const listaPartidas = document.getElementById('lista-admin-partidas');
             if (listaPartidas) {
-                listaPartidas.innerHTML = dadosApp.partidas.map((p, i) => `
+                listaPartidas.innerHTML = partidasOrdenadas().map(({ p, i }) => `
                     <div class="bg-slate-800/60 p-3 rounded-xl space-y-2 text-xs">
                         <div class="flex justify-between items-center">
                             <span class="font-bold text-white">${escapeHtml(p.casa)} x ${escapeHtml(p.visitante)} <span class="text-slate-400 font-normal text-[10px]">${escapeHtml(p.data || '')}</span></span>
@@ -1779,6 +1791,35 @@
             ultimoEstadoPrazo = estado;
         }
 
+        // ===== Recolher / expandir cards (mantém só o cabeçalho) =====
+        const CARDS_KEY = "bolao_cards_recolhidos";
+        function lerEstadoCards() { try { return JSON.parse(localStorage.getItem(CARDS_KEY) || "{}") || {}; } catch (e) { return {}; } }
+        function aplicarEstadoCard(card, recolhido) {
+            card.dataset.recolhido = recolhido ? '1' : '0';
+            Array.from(card.children).slice(1).forEach(el => el.classList.toggle('hidden', recolhido));
+            const ic = card.querySelector('[data-toggle-card] i');
+            if (ic) ic.className = recolhido ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-up';
+        }
+        function alternarCard(btn) {
+            const card = btn.closest('[data-card]');
+            if (!card) return;
+            const recolher = card.dataset.recolhido !== '1';
+            aplicarEstadoCard(card, recolher);
+            const estado = lerEstadoCards();
+            estado[card.dataset.card] = recolher;
+            try { localStorage.setItem(CARDS_KEY, JSON.stringify(estado)); } catch (e) {}
+        }
+        function restaurarCardsRecolhidos() {
+            const estado = lerEstadoCards();
+            document.querySelectorAll('[data-card]').forEach(card => { if (estado[card.dataset.card]) aplicarEstadoCard(card, true); });
+        }
+
+        // Partidas em ordem crescente de início (mantém o índice original para editar/excluir)
+        function partidasOrdenadas() {
+            const t = x => { const d = inicioPartida(x); return d ? d.getTime() : Infinity; };
+            return dadosApp.partidas.map((p, i) => ({ p, i })).sort((a, b) => (t(a.p) - t(b.p)) || (a.i - b.i));
+        }
+
         // ===== Abas por perfil =====
         function atualizarAbasPorPerfil() {
             const admin = ehAdmin();
@@ -1841,6 +1882,7 @@
             renderizarTudo();
             abaPorHash();
             atualizarCardInstalacao();
+            restaurarCardsRecolhidos();
             setInterval(atualizarPrazo, 30000);
             forcarSincronizacaoNuvem(false);
         });
@@ -1852,3 +1894,4 @@
     </script>
 </body>
 </html>
+
