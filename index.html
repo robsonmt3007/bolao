@@ -248,9 +248,10 @@
                     </div>
                     <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800 space-y-1.5">
                         <strong class="text-white block">🔒 4. Confirmação e Fechamento dos Palpites</strong>
-                        <p>O palpite será considerado válido somente após o confirmação no botão fechar e enviar meu palpite.</p>
+                        <p>O palpite será considerado válido somente após o envio pelo WhatsApp e a dupla confirmação da participação.</p>
                         <p>Após a confirmação, o palpite será considerado <strong>FECHADO</strong>, não podendo ser alterado pelo participante.</p>
                         <p>Caso seja necessária qualquer alteração após a confirmação, o participante deverá entrar em contato diretamente com o administrador, que será responsável por avaliar e autorizar a solicitação.</p>
+                        <p>Somente os palpites devidamente fechados serão contabilizados no ranking e participarão da divisão do prêmio.</p>
                     </div>
                     <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800 space-y-1.5">
                         <strong class="text-white block">⏰ 5. Prazo para Participação</strong>
@@ -416,7 +417,7 @@
         let abaAtual = 'palpites';
         let sincronizandoAgora = false;
 
-        const JSONBIN_MASTER_KEY = "$2a$10$lxwiD.gEEta/Lok2tarCS.dpEhTq8bCxm1hCaZQq9jPTjWuH7Myye";
+        const JSONBIN_MASTER_KEY = "$2a$10$aW.mUJ8nW0E9kjAyIY1KveHbcOXt9xBk1L5fjtTv88Dc2fCGDwH7m";
         const BIN_ID_FIXO = "6afe26f5ffd5d16053cce3f2";
         let JSONBIN_BIN_ID = BIN_ID_FIXO || localStorage.getItem('bolao_bin_id') || "";
 
@@ -1029,7 +1030,14 @@
                     est.textContent = "Em aberto";
                 }
             }
-            if (txt) txt.textContent = fechado ? "Reenviar Meu Palpite no WhatsApp" : "Fechar e Enviar Meu Palpite";
+            if (txt) {
+                txt.textContent = fechado ? "Palpite Fechado" : "Fechar e Enviar Meu Palpite";
+                const btnFechar = txt.closest('button');
+                if (btnFechar) {
+                    btnFechar.disabled = fechado;
+                    ['opacity-50', 'cursor-not-allowed', 'pointer-events-none'].forEach(c => btnFechar.classList.toggle(c, fechado));
+                }
+            }
         }
 
         function renderizarPartidasPalpites() {
@@ -1918,5 +1926,6 @@
     </script>
 </body>
 </html>
+
 
 
