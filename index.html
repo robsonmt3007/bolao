@@ -89,6 +89,9 @@
             <button type="button" onclick="mudarAba('regras')" id="tab-btn-regras" class="py-2.5 rounded-lg transition flex flex-col items-center gap-1 text-slate-400 hover:text-white">
                 <i class="fa-solid fa-circle-info"></i> Regras
             </button>
+            <button type="button" onclick="mudarAba('pagamentos')" id="tab-btn-pagamentos" class="py-2.5 rounded-lg transition flex flex-col items-center gap-1 text-slate-400 hover:text-white hidden">
+                <i class="fa-solid fa-coins"></i> Pagtos
+            </button>
             <button type="button" onclick="mudarAba('admin')" id="tab-btn-admin" class="py-2.5 rounded-lg transition flex flex-col items-center gap-1 text-slate-400 hover:text-white">
                 <i class="fa-solid fa-gear"></i> Admin
             </button>
@@ -97,6 +100,8 @@
         <!-- ABA 1: MEUS PALPITES -->
         <div id="tab-palpites" class="space-y-4">
             <div id="card-prazo" class="hidden"></div>
+            <div id="card-pagamento" class="hidden"></div>
+            <div id="card-admin-aviso" class="hidden bg-slate-900 border border-slate-700 rounded-2xl p-3 text-xs text-slate-300">👑 Você está como <strong>administrador</strong>: acompanhe os jogos por aqui, mas o Admin não participa dos palpites.</div>
             <div class="bg-slate-900 border border-emerald-500/20 rounded-2xl p-4 shadow-xl flex items-center justify-between">
                 <div>
                     <span class="text-[10px] uppercase font-bold text-emerald-400 block mb-0.5">Pote Acumulado (Confirmados)</span>
@@ -107,13 +112,13 @@
                     <button type="button" onclick="forcarSincronizacaoNuvem(true)" class="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-3 py-2 rounded-xl transition flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-rotate"></i> Atualizar
                     </button>
-                    <button type="button" onclick="abrirModalImportar()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[11px] font-bold px-3 py-1.5 rounded-xl transition flex items-center justify-center gap-1.5">
+                    <button type="button" id="btn-importar-zap" onclick="abrirModalImportar()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[11px] font-bold px-3 py-1.5 rounded-xl transition flex items-center justify-center gap-1.5">
                         <i class="fa-brands fa-whatsapp text-emerald-400"></i> Importar Zap
                     </button>
                 </div>
             </div>
 
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 flex items-center justify-between gap-2">
+            <div id="card-contador" class="bg-slate-900 border border-slate-800 rounded-2xl p-3 flex items-center justify-between gap-2">
                 <div>
                     <span class="text-[10px] uppercase font-bold text-slate-400 block">Seus palpites</span>
                     <strong id="info-contador" class="text-white text-sm">0 jogos</strong>
@@ -148,7 +153,7 @@
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
                     <div class="flex justify-between items-center gap-2 flex-wrap">
                         <h2 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-list-check text-emerald-400"></i> Palpites Finalizados</h2>
-                        <button type="button" onclick="enviarRelatorioPalpitesWhatsApp()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+                        <button type="button" id="btn-relatorio-palpites" onclick="enviarRelatorioPalpitesWhatsApp()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition flex items-center gap-1.5">
                             <i class="fa-brands fa-whatsapp"></i> Enviar Relatório
                         </button>
                     </div>
@@ -161,6 +166,7 @@
                                     <th class="py-2 px-2">Usuário</th>
                                     <th class="py-2 px-2">Data e Hora</th>
                                     <th class="py-2 px-2 text-center">Jogos</th>
+                                    <th class="py-2 px-2 text-center">Pgto</th>
                                 </tr>
                             </thead>
                             <tbody id="tabela-finalizados" class="divide-y divide-slate-800/60"></tbody>
@@ -176,10 +182,10 @@
                             <button type="button" data-toggle-card onclick="alternarCard(this)" class="text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg shrink-0" title="Recolher / expandir"><i class="fa-solid fa-chevron-up"></i></button>
                             <select id="select-ver-amigo" onchange="renderizarVerPalpitesAmigo()" class="bg-slate-800 border border-slate-700 text-xs font-bold text-emerald-400 rounded-lg px-2.5 py-1.5 focus:outline-none">
                             </select>
-                            <button type="button" onclick="adminReabrirPalpiteSelecionado()" class="bg-amber-600/20 hover:bg-amber-600/30 text-amber-400 border border-amber-500/30 text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5" title="Reabrir palpite para edição">
+                            <button type="button" id="btn-reabrir-palpite" onclick="adminReabrirPalpiteSelecionado()" class="bg-amber-600/20 hover:bg-amber-600/30 text-amber-400 border border-amber-500/30 text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5" title="Reabrir palpite para edição">
                                 <i class="fa-solid fa-lock-open"></i> Reabrir
                             </button>
-                            <button type="button" onclick="adminExcluirPalpitesAmigoSelecionado()" class="bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5" title="Excluir palpites deste usuário">
+                            <button type="button" id="btn-excluir-palpites" onclick="adminExcluirPalpitesAmigoSelecionado()" class="bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5" title="Excluir palpites deste usuário">
                                 <i class="fa-solid fa-trash-can"></i> Excluir Palpites
                             </button>
                         </div>
@@ -221,6 +227,29 @@
                     </table>
                 </div>
             </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+                <h2 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-trophy text-amber-400"></i> Ranking da Temporada</h2>
+                <p class="text-[11px] text-slate-400">Soma dos pontos das rodadas já encerradas. Empatados ocupam a mesma posição.</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400">
+                                <th class="py-2 px-2 text-center">#</th>
+                                <th class="py-2 px-2">Participante</th>
+                                <th class="py-2 px-2 text-center">Rodadas</th>
+                                <th class="py-2 px-2 text-center">Títulos</th>
+                                <th class="py-2 px-2 text-right">Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-temporada" class="divide-y divide-slate-800/60"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+                <h2 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-400"></i> Histórico de Rodadas</h2>
+                <div id="lista-historico" class="space-y-2"></div>
+            </div>
         </div>
 
         <!-- ABA 4: REGRAS & PIX -->
@@ -248,19 +277,31 @@
                     </div>
                     <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800 space-y-1.5">
                         <strong class="text-white block">🔒 4. Confirmação e Fechamento dos Palpites</strong>
-                        <p>O palpite será considerado válido somente após fechar e enviar meu palpite</p>
+                        <p>O palpite será considerado válido somente após fechar e enviar meu palpite.</p>
                         <p>Após a confirmação, o palpite será considerado <strong>FECHADO</strong>, não podendo ser alterado pelo participante.</p>
-                        <p>Caso seja necessária qualquer alteração após a confirmação, o participante deverá entrar em contato diretamente com o administrador, que será responsável por avaliar e autorizar a solicitação.</p>                    
+                        <p>Caso seja necessária qualquer alteração após a confirmação, o participante deverá entrar em contato diretamente com o administrador, que será responsável por avaliar e autorizar a solicitação.</p>
                     </div>
                     <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800 space-y-1.5">
                         <strong class="text-white block">⏰ 5. Prazo para Participação</strong>
-                        <p>O prazo para envio e confirmação dos palpites será encerrado <strong>2 horas antes</strong> do início do primeiro jogo cadastrado.</p>
+                        <p>O prazo para envio e confirmação dos palpites será encerrado <strong>2 horas antes</strong> do início do primeiro jogo.</p>
                         <p>Após esse horário, não serão aceitos novos palpites ou confirmações de participação.</p>
+                        <p>Encerrado o prazo, os palpites de todos os participantes ficam visíveis a todos, para conferência, não podendo mais ser alterado pelo administrador.</p>
                     </div>
                     <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800 space-y-1.5">
                         <strong class="text-white block">🚫 6. Jogos Cancelados, Adiados ou Suspensos</strong>
                         <p>Caso alguma partida seja cancelada, adiada ou suspensa, ela será excluída da competição e não será contabilizada na pontuação de nenhum participante.</p>
                         <p>Dessa forma, nenhum participante receberá ou perderá pontos em razão dessa partida, e a classificação será calculada considerando apenas os jogos válidos.</p>
+                        <p>O jogo permanece visível, com a indicação de adiado ou cancelado, mas não pontua.</p>
+                    </div>
+                    <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800 space-y-1.5">
+                        <strong class="text-white block">💳 7. Pagamento</strong>
+                        <p>O pagamento do palpite fechado deve ser feito diretamente ao ganhador(es). O admin registra a situação como <strong>Pago</strong> ou <strong>Pendente</strong>. Cada participante acompanha a sua situação na guia Meu Jogo.</p>
+                        <p>O participante com pagamento pendente de rodada anterior não poderá fazer novos palpites até regularizar o débito.</p>
+                    </div>
+                    <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800 space-y-1.5">
+                        <strong class="text-white block">📚 8. Administração e Histórico</strong>
+                        <p>O administrador organiza o bolão e não participa dos palpites nem da premiação.</p>
+                        <p>Ao final de cada rodada, o resultado (vencedores, prêmio e data) é guardado no Histórico, e os pontos alimentam o Ranking da Temporada.</p>
                     </div>
                 </div>
                 <div id="card-instalar" class="border-t border-slate-800 pt-4 space-y-2">
@@ -268,6 +309,20 @@
                     <p id="dica-instalar" class="text-[11px] text-slate-400"></p>
                     <button type="button" id="btn-instalar" onclick="instalarApp()" class="hidden w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl transition">Instalar Bolão dos Amigos</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- ABA: CONTROLE DE PAGAMENTOS (ADMIN) -->
+        <div id="tab-pagamentos" class="space-y-4 hidden">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+                <h2 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-coins text-emerald-400"></i> Controle de Pagamentos</h2>
+                <p class="text-[11px] text-slate-400">Participantes com palpite fechado na rodada atual. Quem tiver débito de rodada anterior fica impedido de fazer novos palpites.</p>
+                <div id="pag-resumo" class="grid grid-cols-2 gap-2"></div>
+                <div id="pag-lista" class="space-y-2"></div>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+                <h3 class="text-xs font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Débitos de Rodadas Anteriores</h3>
+                <div id="pag-anteriores" class="space-y-2"></div>
             </div>
         </div>
 
@@ -288,6 +343,9 @@
             </div>
 
             <div id="admin-painel-conteudo" class="space-y-4 hidden">
+                <div id="aviso-prazo-admin" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3 text-xs text-amber-200">
+                    🔒 <strong>Prazo dos palpites encerrado.</strong> Valor, limite, fechamento automático e jogos (editar, excluir, adicionar) ficam bloqueados. Lançar resultado, adiar/cancelar jogo e <strong>Encerrar Rodada</strong> continuam liberados.
+                </div>
                 <div id="aviso-senha-admin" class="hidden bg-red-500/10 border border-red-500/30 rounded-2xl p-3 text-xs text-red-300">
                     ⚠️ A senha do Admin ainda é a padrão (1234). Troque agora em <strong>Participantes → Redefinir senha</strong>.
                 </div>
@@ -306,7 +364,7 @@
                     <p class="text-[11px] text-slate-400">Valor pago por participante. O pote é calculado automaticamente (valor × palpites fechados).</p>
                     <div class="flex gap-2">
                         <input type="number" id="input-valor-palpite" min="0" step="0.01" placeholder="Ex: 10" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 flex-grow text-white">
-                        <button type="button" onclick="salvarValorPalpite()" class="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-xl">Salvar Valor</button>
+                        <button type="button" id="btn-salvar-valor" onclick="salvarValorPalpite()" class="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-xl">Salvar Valor</button>
                     </div>
                 </div>
 
@@ -321,7 +379,7 @@
                     <p class="text-[11px] text-slate-400">Defina quantos jogos cada participante pode escolher por rodada (0 para sem limite).</p>
                     <div class="flex gap-2">
                         <input type="number" id="input-limite-jogos" min="0" placeholder="Ex: 5" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 flex-grow text-white">
-                        <button type="button" onclick="salvarLimiteJogos()" class="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-xl">Salvar Limite</button>
+                        <button type="button" id="btn-salvar-limite" onclick="salvarLimiteJogos()" class="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-xl">Salvar Limite</button>
                     </div>
                 </div>
 
@@ -333,15 +391,15 @@
                         <button type="button" data-toggle-card onclick="alternarCard(this)" class="text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg shrink-0" title="Recolher / expandir"><i class="fa-solid fa-chevron-up"></i></button>
                     </div>
                     <div id="lista-admin-partidas" class="space-y-2.5"></div>
-                    <button type="button" onclick="limparTodosJogos()" class="w-full bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 text-xs font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2">
+                    <button type="button" id="btn-limpar-jogos" onclick="limparTodosJogos()" class="w-full bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 text-xs font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2">
                         <i class="fa-solid fa-trash-can"></i> Limpar Todos os Jogos
                     </button>
                 </div>
 
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-2 text-center">
-                    <h3 class="text-xs font-bold text-amber-400">🏆 Fim da Rodada / Torneio</h3>
-                    <p class="text-[11px] text-slate-400">Zere a pontuação para iniciar uma nova rodada mantendo os participantes e jogos.</p>
-                    <button type="button" onclick="zerarRanking()" class="w-full bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold py-2.5 rounded-xl transition shadow">Zerar Ranking e Pontuações</button>
+                    <h3 class="text-xs font-bold text-amber-400">🏆 Encerrar Rodada</h3>
+                    <p class="text-[11px] text-slate-400">Arquiva a rodada no Histórico (vencedores, prêmio e data) e inicia uma nova, apagando os jogos, resultados e palpites. Participantes e débitos pendentes são mantidos.</p>
+                    <button type="button" onclick="encerrarRodada()" class="w-full bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold py-2.5 rounded-xl transition shadow">Encerrar Rodada e Arquivar</button>
                 </div>
 
                 <div data-card="torneios" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
@@ -400,6 +458,28 @@
             <div class="flex justify-end gap-2">
                 <button type="button" onclick="fecharModalImportar()" class="bg-slate-800 text-slate-300 text-xs font-bold px-4 py-2 rounded-xl">Cancelar</button>
                 <button type="button" onclick="processarImportacaoWhatsApp()" class="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-xl">Importar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR PARTIDA -->
+    <div id="modal-editar-partida" class="fixed inset-0 bg-slate-950/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-5 space-y-3">
+            <div class="flex justify-between items-center">
+                <h3 class="text-sm font-bold text-white">Editar Partida</h3>
+                <button type="button" onclick="fecharModalEditarPartida()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <input type="text" id="edit-casa" placeholder="Time da casa" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white">
+                <input type="text" id="edit-visitante" placeholder="Visitante" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <select id="edit-campeonato" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white"></select>
+                <input type="datetime-local" id="edit-data" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white">
+            </div>
+            <div class="flex justify-end gap-2 pt-1">
+                <button type="button" onclick="fecharModalEditarPartida()" class="bg-slate-800 text-slate-300 text-xs font-bold px-4 py-2 rounded-xl">Cancelar</button>
+                <button type="button" onclick="salvarEdicaoPartida()" class="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-xl">Salvar</button>
             </div>
         </div>
     </div>
@@ -706,7 +786,10 @@
             palpites: {},
             limiteJogosPorAposta: 0,
             valorPalpite: 10,
-            fechamentoAutomatico: true
+            fechamentoAutomatico: true,
+            rodadaNumero: 1,
+            pagamentos: {},
+            historico: []
         };
 
         let dadosApp = JSON.parse(JSON.stringify(DADOS_PADRAO));
@@ -736,7 +819,7 @@
                 let id = (p.id === undefined || p.id === null) ? "" : String(p.id);
                 if (!id || usados.has(id)) { id = "jogo_" + Date.now() + "_" + i + "_" + Math.floor(Math.random() * 1000); houveMigracao = true; }
                 usados.add(id);
-                return { ...p, id, casa: String(p.casa || ''), visitante: String(p.visitante || '') };
+                return { ...p, id, casa: String(p.casa || ''), visitante: String(p.visitante || ''), situacao: ['adiado', 'cancelado'].includes(p.situacao) ? p.situacao : '' };
             });
 
             const valor = Number(base.valorPalpite);
@@ -750,7 +833,10 @@
                 palpites: base.palpites && typeof base.palpites === 'object' ? base.palpites : {},
                 limiteJogosPorAposta: Number(base.limiteJogosPorAposta) || 0,
                 valorPalpite: (base.valorPalpite !== undefined && base.valorPalpite !== null && isFinite(valor) && valor >= 0) ? valor : 10,
-                fechamentoAutomatico: base.fechamentoAutomatico !== false
+                fechamentoAutomatico: base.fechamentoAutomatico !== false,
+                rodadaNumero: Number(base.rodadaNumero) >= 1 ? Math.floor(Number(base.rodadaNumero)) : 1,
+                pagamentos: base.pagamentos && typeof base.pagamentos === 'object' ? base.pagamentos : {},
+                historico: Array.isArray(base.historico) ? base.historico : []
             };
         }
 
@@ -962,9 +1048,9 @@
         }
 
         function mudarAba(aba) {
-            if (!ehAdmin() && ['ver-palpites', 'admin'].includes(aba)) aba = 'palpites';
+            if (((aba === 'admin' || aba === 'pagamentos') && !ehAdmin()) || (aba === 'ver-palpites' && !podeVerPalpites())) aba = 'palpites';
             abaAtual = aba;
-            const abas = ['palpites', 'ver-palpites', 'ranking', 'regras', 'admin'];
+            const abas = ['palpites', 'ver-palpites', 'ranking', 'regras', 'pagamentos', 'admin'];
             abas.forEach(nome => {
                 const painel = document.getElementById(`tab-${nome}`);
                 const btn = document.getElementById(`tab-btn-${nome}`);
@@ -987,11 +1073,7 @@
         }
 
         function calcularPote() {
-            const qtd = Object.keys(dadosApp.palpites || {}).filter(nome => {
-                if (nome === "Admin" || !dadosApp.amigos.includes(nome)) return false;
-                const p = dadosApp.palpites[nome];
-                return p && p.fechado !== false && p.escolhas && Object.keys(p.escolhas).length > 0;
-            }).length;
+            const qtd = participantesFechados().length;
             return { qtd, total: Math.round(qtd * (Number(dadosApp.valorPalpite) || 0) * 100) / 100 };
         }
 
@@ -1012,15 +1094,28 @@
             const el = document.getElementById('info-contador');
             const est = document.getElementById('info-estado-palpite');
             const txt = document.getElementById('btn-fechar-palpite-txt');
+            const btnFechar = txt ? txt.closest('button') : null;
+            const admin = ehAdmin();
+            document.getElementById('card-contador')?.classList.toggle('hidden', admin);
+            document.getElementById('card-admin-aviso')?.classList.toggle('hidden', !admin);
+            document.getElementById('btn-importar-zap')?.classList.toggle('hidden', admin);
+            if (btnFechar) btnFechar.classList.toggle('hidden', admin);
+            atualizarCardPagamento();
+            if (admin) return;
+
             const reg = (usuarioLogado && dadosApp.palpites[usuarioLogado]) || null;
             const n = contarPalpitesValidos(reg && reg.escolhas);
             const limite = Number(dadosApp.limiteJogosPorAposta) || 0;
             const fechado = !!reg && reg.fechado === true;
+            const debito = !!usuarioLogado && bloqueadoPorDebito(usuarioLogado);
             if (el) el.textContent = limite > 0 ? `${n} de ${limite} jogos palpitados` : `${n} jogo${n === 1 ? '' : 's'} palpitado${n === 1 ? '' : 's'} (sem limite)`;
             if (est) {
                 if (fechado) {
                     est.className = "text-[11px] font-bold px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30";
                     est.textContent = `🔒 Fechado em ${formatarDataHora(reg.fechadoEm)}`;
+                } else if (debito) {
+                    est.className = "text-[11px] font-bold px-2.5 py-1 rounded-lg bg-red-500/10 text-red-400 border border-red-500/30";
+                    est.textContent = "Pagamento pendente";
                 } else if (prazoEncerrado()) {
                     est.className = "text-[11px] font-bold px-2.5 py-1 rounded-lg bg-red-500/10 text-red-400 border border-red-500/30";
                     est.textContent = "Prazo encerrado";
@@ -1031,10 +1126,10 @@
             }
             if (txt) {
                 txt.textContent = fechado ? "Palpite Fechado" : "Fechar e Enviar Meu Palpite";
-                const btnFechar = txt.closest('button');
                 if (btnFechar) {
-                    btnFechar.disabled = fechado;
-                    ['opacity-50', 'cursor-not-allowed', 'pointer-events-none'].forEach(c => btnFechar.classList.toggle(c, fechado));
+                    const travar = fechado || debito;
+                    btnFechar.disabled = travar;
+                    ['opacity-50', 'cursor-not-allowed', 'pointer-events-none'].forEach(c => btnFechar.classList.toggle(c, travar));
                 }
             }
         }
@@ -1051,20 +1146,26 @@
 
             const reg = (usuarioLogado && dadosApp.palpites[usuarioLogado]) || null;
             const escolhasUsuario = (reg && reg.escolhas) || {};
-            const travado = (!!reg && reg.fechado === true) || prazoEncerrado();
+            const travado = (!!reg && reg.fechado === true) || prazoEncerrado() || ehAdmin() || (!!usuarioLogado && bloqueadoPorDebito(usuarioLogado));
             const trava = travado ? 'disabled' : '';
             const extra = travado ? ' opacity-70 cursor-not-allowed' : '';
 
             container.innerHTML = partidasOrdenadas().map(({ p: partida, i }) => {
                 const escolhaAtual = escolhasUsuario[String(partida.id)] || "";
+                const rotuloRes = partida.resultado === 'casa' ? partida.casa : partida.resultado === 'visitante' ? partida.visitante : 'Empate';
+                const linhaRes = partida.situacao
+                    ? `<div class="text-[11px] text-slate-300 bg-slate-800/50 rounded-lg px-3 py-1.5">Este jogo está <strong class="text-white">${partida.situacao}</strong> e não vale pontos.</div>`
+                    : partida.resultado
+                        ? `<div class="text-[11px] text-slate-300 bg-slate-800/50 rounded-lg px-3 py-1.5">Resultado oficial: <strong class="text-white">${escapeHtml(rotuloRes)}</strong>${escolhaAtual ? (escolhaAtual === partida.resultado ? ' • <span class="text-emerald-400 font-bold">✅ Você acertou</span>' : ' • <span class="text-red-400 font-bold">❌ Você errou</span>') : ''}</div>`
+                        : '';
                 const btnClass = (op) => escolhaAtual === op
                     ? "bg-emerald-600 text-white border-emerald-500 font-bold"
                     : "bg-slate-800/70 text-slate-300 border-slate-700 hover:bg-slate-800";
                 return `
                     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
-                        <div class="flex justify-between items-center text-[10px] text-slate-400">
-                            <span class="font-bold text-emerald-400 uppercase">${escapeHtml(partida.campeonato || 'Campeonato')}</span>
-                            <span>${escapeHtml(partida.data || '')}</span>
+                        <div class="flex justify-between items-center gap-2 text-[10px] text-slate-400">
+                            <span class="font-bold text-emerald-400 uppercase truncate">${escapeHtml(partida.campeonato || 'Campeonato')}</span>
+                            <span class="flex items-center gap-2 shrink-0">${seloStatus(partida)}<span>${escapeHtml(partida.data || '')}</span></span>
                         </div>
                         <div class="grid grid-cols-3 gap-2 text-xs">
                             <button type="button" ${trava} onclick="registrarPalpiteIdx(${i}, 'casa')" class="p-2.5 rounded-xl border transition flex flex-col items-center gap-1 ${btnClass('casa')}${extra}">
@@ -1079,6 +1180,7 @@
                                 <span class="truncate max-w-full">${escapeHtml(partida.visitante)}</span>
                             </button>
                         </div>
+                        ${linhaRes}
                     </div>
                 `;
             }).join('');
@@ -1088,6 +1190,8 @@
             const partida = dadosApp.partidas[i];
             if (!partida) return;
             if (!usuarioLogado) { atualizarInterfaceLogin(); return; }
+            if (ehAdmin()) { alert("O administrador não participa dos palpites."); return; }
+            if (bloqueadoPorDebito(usuarioLogado)) { alert(mensagemDebito(usuarioLogado)); return; }
             if (prazoEncerrado()) { alert("O prazo para palpites já encerrou."); renderizarPartidasPalpites(); return; }
             if (!dadosApp.palpites[usuarioLogado]) {
                 dadosApp.palpites[usuarioLogado] = { escolhas: {}, atualizadoEm: new Date().toISOString(), fechado: false };
@@ -1155,7 +1259,8 @@
                     <td class="py-2 px-2 font-semibold text-white">${escapeHtml(r.nome)}</td>
                     <td class="py-2 px-2 text-slate-300">${r.quando ? formatarDataHora(r.quando) : '—'}${r.reg.fechado === true ? '' : ' <span class="text-[10px] text-slate-500">(antigo)</span>'}</td>
                     <td class="py-2 px-2 text-center text-emerald-400 font-bold">${r.jogos}</td>
-                </tr>`).join('') : `<tr><td colspan="4" class="py-4 text-center text-slate-400">Nenhum palpite finalizado ainda.</td></tr>`;
+                    <td class="py-2 px-2 text-center" title="${estaPago(r.nome) ? 'Pago' : 'Pendente'}">${estaPago(r.nome) ? '✅' : '⏳'}</td>
+                </tr>`).join('') : `<tr><td colspan="5" class="py-4 text-center text-slate-400">Nenhum palpite finalizado ainda.</td></tr>`;
         }
 
         function selecionarAmigoPalpites(i) {
@@ -1184,6 +1289,8 @@
         }
 
         async function adminReabrirPalpiteSelecionado() {
+            if (!ehAdmin()) return;
+            if (bloqueadoPeloPrazo("reabrir palpites")) return;
             const select = document.getElementById('select-ver-amigo');
             const amigo = select ? select.value : "";
             const reg = amigo ? dadosApp.palpites[amigo] : null;
@@ -1192,8 +1299,7 @@
             if (!confirm(`Reabrir o palpite de ${amigo}? Ele deixará de contar no pote e no ranking até ser fechado de novo.`)) return;
             reg.fechado = false;
             delete reg.fechadoEm;
-            renderizarVerPalpites();
-            atualizarPote();
+            renderizarTudo();
             await salvarNuvem();
         }
 
@@ -1202,14 +1308,24 @@
             const painel = document.getElementById('ver-palpites-painel-conteudo');
             if (!boxLogin || !painel) return;
 
-            if (!verPalpitesLogado && !ehAdmin()) {
+            if (!podeVerPalpites()) {
                 boxLogin.classList.remove('hidden');
                 painel.classList.add('hidden');
                 return;
             }
-
             boxLogin.classList.add('hidden');
             painel.classList.remove('hidden');
+
+            const adm = ehAdmin(), bloq = prazoEncerrado();
+            ['btn-reabrir-palpite', 'btn-excluir-palpites'].forEach(id => {
+                const b = document.getElementById(id);
+                if (!b) return;
+                b.classList.toggle('hidden', !adm);
+                b.disabled = bloq;
+                b.classList.toggle('opacity-40', bloq);
+                b.classList.toggle('cursor-not-allowed', bloq);
+            });
+            document.getElementById('btn-relatorio-palpites')?.classList.toggle('hidden', !adm);
 
             const select = document.getElementById('select-ver-amigo');
             if (select) {
@@ -1246,7 +1362,9 @@
                 const esc = registro.escolhas[String(p.id)];
                 if (!esc) return '';
                 let selo;
-                if (p.resultado) {
+                if (p.situacao) {
+                    selo = `<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-600/30 text-slate-300 border border-slate-500/40">${p.situacao === 'adiado' ? '⏸ Adiado' : '🚫 Cancelado'} • não pontua</span>`;
+                } else if (p.resultado) {
                     if (esc === p.resultado) { acertos++; selo = `<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">✅ Acertou</span>`; }
                     else { erros++; selo = `<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-red-500/15 text-red-400 border border-red-500/30">❌ Errou</span>`; }
                 } else {
@@ -1271,18 +1389,19 @@
         }
 
         async function adminExcluirPalpitesAmigoSelecionado() {
+            if (!ehAdmin()) return;
+            if (bloqueadoPeloPrazo("excluir palpites")) return;
             const select = document.getElementById('select-ver-amigo');
             if (!select || !select.value) return;
             const amigo = select.value;
             if (!confirmarExclusaoDupla(`todos os palpites de "${amigo}"`)) return;
             delete dadosApp.palpites[amigo];
-            renderizarVerPalpitesAmigo();
-            atualizarPote();
+            renderizarTudo();
             await salvarNuvem();
         }
 
         function calcularRanking(filtro) {
-            const partidas = dadosApp.partidas.filter(p => filtro === 'todos' || p.campeonato === filtro);
+            const partidas = dadosApp.partidas.filter(p => (filtro === 'todos' || p.campeonato === filtro) && !p.situacao);
             const linhas = dadosApp.amigos.filter(nome => nome !== "Admin").map(nome => {
                 const reg = dadosApp.palpites[nome];
                 const escolhas = (reg && reg.fechado !== false && reg.escolhas) || {};
@@ -1394,9 +1513,18 @@
                 painel.classList.add('hidden');
                 return;
             }
-
             loginBox.classList.add('hidden');
             painel.classList.remove('hidden');
+
+            const bloq = prazoEncerrado();
+            document.getElementById('aviso-prazo-admin')?.classList.toggle('hidden', !bloq);
+            ['input-valor-palpite', 'btn-salvar-valor', 'input-limite-jogos', 'btn-salvar-limite', 'btn-toggle-prazo', 'btn-add-partida', 'btn-limpar-jogos'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.disabled = bloq;
+                el.classList.toggle('opacity-50', bloq);
+                el.classList.toggle('cursor-not-allowed', bloq);
+            });
 
             const aviso = document.getElementById('aviso-senha-admin');
             if (aviso) aviso.classList.toggle('hidden', !adminUsaSenhaPadrao());
@@ -1406,20 +1534,22 @@
             const inputLimite = document.getElementById('input-limite-jogos');
             if (inputLimite && document.activeElement !== inputLimite) inputLimite.value = dadosApp.limiteJogosPorAposta || 0;
 
-            const infoPrazo2 = document.getElementById('admin-prazo-info');
+            const infoPrazoEl = document.getElementById('admin-prazo-info');
             const btnPrazo = document.getElementById('btn-toggle-prazo');
             const ip = infoPrazo();
-            if (infoPrazo2) {
-                infoPrazo2.textContent = !dadosApp.fechamentoAutomatico
+            if (infoPrazoEl) {
+                infoPrazoEl.textContent = !dadosApp.fechamentoAutomatico
                     ? "Fechamento automático DESATIVADO: os palpites ficam liberados."
-                    : ip.ativo ? `Palpites encerram em ${formatarDataHora(ip.limite.toISOString())} (2h antes do 1º jogo, em ${formatarDataHora(ip.primeiro.toISOString())}).`
+                    : ip.ativo ? `Palpites ${ip.encerrado ? 'encerraram' : 'encerram'} em ${formatarDataHora(ip.limite.toISOString())} (2h antes do 1º jogo, em ${formatarDataHora(ip.primeiro.toISOString())}).`
                                : "Cadastre partidas com data e hora para definir o prazo.";
             }
             if (btnPrazo) btnPrazo.textContent = dadosApp.fechamentoAutomatico ? "Desativar fechamento automático" : "Ativar fechamento automático";
 
             const selectComp = document.getElementById('novo-campeonato');
             if (selectComp) {
+                const compAnterior = selectComp.value;
                 selectComp.innerHTML = dadosApp.torneios.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+                if (compAnterior && dadosApp.torneios.includes(compAnterior)) selectComp.value = compAnterior;
             }
 
             const listaTorneios = document.getElementById('lista-admin-torneios');
@@ -1434,18 +1564,32 @@
 
             const listaPartidas = document.getElementById('lista-admin-partidas');
             if (listaPartidas) {
+                const trava = bloq ? ' disabled' : '';
+                const apagado = bloq ? ' opacity-40 cursor-not-allowed' : '';
                 listaPartidas.innerHTML = partidasOrdenadas().map(({ p, i }) => `
                     <div class="bg-slate-800/60 p-3 rounded-xl space-y-2 text-xs">
-                        <div class="flex justify-between items-center">
-                            <span class="font-bold text-white">${escapeHtml(p.casa)} x ${escapeHtml(p.visitante)} <span class="text-slate-400 font-normal text-[10px]">${escapeHtml(p.data || '')}</span></span>
-                            <button type="button" onclick="removerPartidaIdx(${i})" class="text-red-400 text-[11px]">Excluir</button>
+                        <div class="flex justify-between items-start gap-2">
+                            <span class="font-bold text-white min-w-0">${escapeHtml(p.casa)} x ${escapeHtml(p.visitante)}
+                                <span class="block text-slate-400 font-normal text-[10px]">${escapeHtml(p.campeonato || '')} • ${escapeHtml(p.data || '')}</span>
+                            </span>
+                            <span class="shrink-0">${seloStatus(p)}</span>
                         </div>
-                        <div class="flex gap-1.5">
-                            ${['casa', 'empate', 'visitante'].map(op => {
-                                const rotulo = op === 'casa' ? p.casa : op === 'visitante' ? p.visitante : 'Empate';
-                                const ativo = p.resultado === op ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-300';
-                                return `<button type="button" onclick="definirResultadoIdx(${i}, '${op}')" class="flex-1 py-1.5 rounded-lg font-bold text-[11px] ${ativo}">${escapeHtml(rotulo)}</button>`;
-                            }).join('')}
+                        ${p.situacao
+                            ? `<p class="text-[11px] text-amber-300">Jogo ${p.situacao}: não recebe resultado e não pontua para ninguém.</p>`
+                            : `<div class="flex gap-1.5">
+                                ${['casa', 'empate', 'visitante'].map(op => {
+                                    const rotulo = op === 'casa' ? p.casa : op === 'visitante' ? p.visitante : 'Empate';
+                                    const ativo = p.resultado === op ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-300';
+                                    return `<button type="button" onclick="definirResultadoIdx(${i}, '${op}')" class="flex-1 py-1.5 rounded-lg font-bold text-[11px] ${ativo}">${escapeHtml(rotulo)}</button>`;
+                                }).join('')}
+                              </div>`}
+                        <div class="flex flex-wrap justify-end gap-x-3 gap-y-1 text-[11px] font-semibold">
+                            ${p.situacao
+                                ? `<button type="button" onclick="definirSituacaoIdx(${i}, '')" class="text-emerald-400 hover:underline">Reativar</button>`
+                                : `<button type="button" onclick="definirSituacaoIdx(${i}, 'adiado')" class="text-amber-400 hover:underline">Adiar</button>
+                                   <button type="button" onclick="definirSituacaoIdx(${i}, 'cancelado')" class="text-amber-400 hover:underline">Cancelar</button>`}
+                            <button type="button"${trava} onclick="abrirEditarPartida(${i})" class="text-sky-400 hover:underline${apagado}">Editar</button>
+                            <button type="button"${trava} onclick="removerPartidaIdx(${i})" class="text-red-400 hover:underline${apagado}">Excluir</button>
                         </div>
                     </div>
                 `).join('') || `<p class="text-xs text-slate-400">Nenhuma partida cadastrada.</p>`;
@@ -1466,8 +1610,10 @@
         }
 
         async function salvarLimiteJogos() {
+            if (bloqueadoPeloPrazo("alterar o limite de palpites")) return;
             const val = parseInt(document.getElementById('input-limite-jogos')?.value || "0", 10);
             dadosApp.limiteJogosPorAposta = isNaN(val) || val < 0 ? 0 : val;
+            renderizarTudo();
             await salvarNuvem();
             alert("Limite salvo!");
         }
@@ -1475,7 +1621,10 @@
         async function limparTodosJogos() {
             const n = dadosApp.partidas.length;
             if (!n) { alert("Não há jogos cadastrados."); return; }
-            if (!confirmarExclusaoDupla(`TODOS os ${n} jogo(s) cadastrado(s), junto com os resultados e todos os palpites dos participantes`)) return;
+            if (bloqueadoPeloPrazo("excluir jogos (use Encerrar Rodada)")) return;
+            const arquiva = participantesFechados().length > 0;
+            if (!confirmarExclusaoDupla(`TODOS os ${n} jogo(s) cadastrado(s), junto com os resultados e todos os palpites${arquiva ? ' (a rodada será arquivada no Histórico antes)' : ''}`)) return;
+            if (arquiva) arquivarRodada();
             dadosApp.partidas = [];
             dadosApp.palpites = {};
             renderizarTudo();
@@ -1485,13 +1634,14 @@
         async function definirResultadoIdx(i, resultado) {
             const p = dadosApp.partidas[i];
             if (!p) return;
+            if (p.situacao) { alert("Jogo adiado/cancelado não recebe resultado. Reative-o antes."); return; }
             p.resultado = p.resultado === resultado ? "" : resultado;
-            renderizarAdmin();
-            atualizarRanking();
+            renderizarTudo();
             await salvarNuvem();
         }
 
         async function removerPartidaIdx(i) {
+            if (bloqueadoPeloPrazo("excluir jogos (use Adiar/Cancelar ou Encerrar Rodada)")) return;
             const alvo = dadosApp.partidas[i];
             if (!alvo) return;
             if (!confirmarExclusaoDupla(`a partida "${alvo.casa} x ${alvo.visitante}"`)) return;
@@ -1500,13 +1650,7 @@
             await salvarNuvem();
         }
 
-        async function zerarRanking() {
-            if (!confirmarExclusaoDupla("TODOS os resultados e palpites da rodada (zerar ranking)")) return;
-            dadosApp.partidas.forEach(p => { p.resultado = ""; });
-            dadosApp.palpites = {};
-            renderizarTudo();
-            await salvarNuvem();
-        }
+
 
         async function adicionarTorneio() {
             const input = document.getElementById('input-novo-torneio');
@@ -1531,6 +1675,7 @@
         }
 
         async function adicionarNovaPartida() {
+            if (bloqueadoPeloPrazo("cadastrar novos jogos (encerre a rodada para começar outra)")) return;
             const casa = document.getElementById('novo-time-casa')?.value.trim();
             const visitante = document.getElementById('novo-time-visitante')?.value.trim();
             const campeonato = document.getElementById('novo-campeonato')?.value || "Campeonato";
@@ -1606,17 +1751,18 @@
         }
 
         async function salvarValorPalpite() {
+            if (bloqueadoPeloPrazo("alterar o valor por palpite")) return;
             const input = document.getElementById('input-valor-palpite');
             const v = parseFloat(String(input ? input.value : "").replace(',', '.'));
             if (!isFinite(v) || v < 0) { alert("Informe um valor válido."); return; }
             dadosApp.valorPalpite = Math.round(v * 100) / 100;
-            atualizarPote();
-            atualizarTextoRegras();
+            renderizarTudo();
             await salvarNuvem();
             alert("Valor por palpite salvo!");
         }
 
         async function alternarFechamentoAutomatico() {
+            if (bloqueadoPeloPrazo("alterar o fechamento dos palpites")) return;
             dadosApp.fechamentoAutomatico = !dadosApp.fechamentoAutomatico;
             renderizarTudo();
             await salvarNuvem();
@@ -1625,10 +1771,12 @@
         async function removerAmigoPorIndice(idx) {
             const nome = dadosApp.amigos[idx];
             if (!nome || nome === "Admin") return;
+            if (dadosApp.palpites[nome] && bloqueadoPeloPrazo("remover participantes que têm palpite")) return;
             if (!confirmarExclusaoDupla(`o participante "${nome}" (com senha e palpites)`)) return;
             dadosApp.amigos = dadosApp.amigos.filter(a => a !== nome);
             delete dadosApp.senhasUsuarios[nome];
             delete dadosApp.palpites[nome];
+            Object.keys(dadosApp.pagamentos || {}).forEach(rid => { if (dadosApp.pagamentos[rid]) delete dadosApp.pagamentos[rid][nome]; });
             popularSelectLoginUsuario();
             renderizarAdmin();
             atualizarRanking();
@@ -1673,6 +1821,8 @@
                 dadosApp.palpites[usuarioLogado] = { escolhas: {}, atualizadoEm: new Date().toISOString() };
             }
 
+            if (ehAdmin()) { alert("O administrador não participa dos palpites."); return; }
+            if (bloqueadoPorDebito(usuarioLogado)) { alert(mensagemDebito(usuarioLogado)); return; }
             if (dadosApp.palpites[usuarioLogado].fechado === true) { alert("Seu palpite já está fechado."); return; }
             if (prazoEncerrado()) { alert("O prazo para palpites já encerrou."); return; }
             let importados = 0;
@@ -1722,6 +1872,7 @@
 
         async function gerarComprovanteWhatsApp() {
             if (!usuarioLogado) { atualizarInterfaceLogin(); return; }
+            if (ehAdmin()) { alert("O administrador não participa dos palpites."); return; }
             const reg = dadosApp.palpites[usuarioLogado];
             const escolhas = (reg && reg.escolhas) || {};
             const itens = dadosApp.partidas.filter(p => escolhas[String(p.id)]).map(p => {
@@ -1732,11 +1883,12 @@
             if (!itens.length) { alert("Selecione pelo menos um palpite antes de enviar."); return; }
 
             if (!(reg && reg.fechado === true)) {
+                if (bloqueadoPorDebito(usuarioLogado)) { alert(mensagemDebito(usuarioLogado)); return; }
                 if (prazoEncerrado()) { alert("O prazo para fechar palpites já encerrou."); return; }
                 const limite = Number(dadosApp.limiteJogosPorAposta) || 0;
                 const resumo = limite > 0 ? `${itens.length} de ${limite} jogos` : `${itens.length} jogo(s)`;
                 if (!confirm(`Deseja fechar o seu palpite com ${resumo}?\n\nDepois de fechado, ele não poderá ser alterado.`)) return;
-                if (!confirm(`⚠️ SEGUNDA CONFIRMAÇÃO\n\nFechar DEFINITIVAMENTE o palpite de ${usuarioLogado}?\nValor da aposta: ${formatarMoeda(dadosApp.valorPalpite)}\n\nEsta ação não pode ser desfeita por você.`)) return;
+                if (!confirm(`⚠️ SEGUNDA CONFIRMAÇÃO\n\nFechar DEFINITIVAMENTE o palpite de ${usuarioLogado}?\nValor da aposta: ${formatarMoeda(dadosApp.valorPalpite)} (pagamento ao administrador)\n\nEsta ação não pode ser desfeita por você.`)) return;
                 reg.fechado = true;
                 reg.fechadoEm = new Date().toISOString();
                 reg.atualizadoEm = reg.fechadoEm;
@@ -1760,8 +1912,10 @@
             atualizarPrazo();
             renderizarPartidasPalpites();
             atualizarRanking();
+            renderizarTemporada();
             atualizarTextoRegras();
             if (abaAtual === 'ver-palpites') renderizarVerPalpites();
+            if (abaAtual === 'pagamentos') renderizarPagamentos();
             if (abaAtual === 'admin') renderizarAdmin();
         }
 
@@ -1818,8 +1972,9 @@
                 }
             }
             const estado = info.ativo ? info.encerrado : false;
-            if (ultimoEstadoPrazo !== null && ultimoEstadoPrazo !== estado) renderizarPartidasPalpites();
+            const mudou = ultimoEstadoPrazo !== null && ultimoEstadoPrazo !== estado;
             ultimoEstadoPrazo = estado;
+            if (mudou) { renderizarTudo(); return; }
         }
 
         // ===== Recolher / expandir cards (mantém só o cabeçalho) =====
@@ -1851,13 +2006,341 @@
             return dadosApp.partidas.map((p, i) => ({ p, i })).sort((a, b) => (t(a.p) - t(b.p)) || (a.i - b.i));
         }
 
+        // ===== Selo de jogo adiado / cancelado =====
+
+        function statusPartida(p) {
+            return p.situacao ? { tipo: p.situacao } : { tipo: 'normal' };
+        }
+
+        function seloStatus(p) {
+            const base = "inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border bg-slate-600/30 text-slate-300 border-slate-500/40";
+            if (p.situacao === 'adiado') return `<span class="${base}">⏸ Adiado • não pontua</span>`;
+            if (p.situacao === 'cancelado') return `<span class="${base}">🚫 Cancelado • não pontua</span>`;
+            return '';
+        }
+
+
+
+        // ===== Pagamentos =====
+        function rodadaId() { return String(dadosApp.rodadaNumero || 1); }
+
+        function participantesFechados() {
+            return Object.keys(dadosApp.palpites || {}).filter(nome => {
+                if (nome === "Admin" || !dadosApp.amigos.includes(nome)) return false;
+                const r = dadosApp.palpites[nome];
+                return !!r && r.fechado !== false && r.escolhas && contarPalpitesValidos(r.escolhas) > 0;
+            });
+        }
+
+        function pagamentoAtual(nome) { return (dadosApp.pagamentos[rodadaId()] || {})[nome] || null; }
+        function estaPago(nome) { const e = pagamentoAtual(nome); return !!(e && e.pago); }
+
+        function debitosAnteriores(nome) {
+            const lista = [];
+            if (!nome) return lista;
+            Object.keys(dadosApp.pagamentos || {}).forEach(rid => {
+                if (rid === rodadaId()) return;
+                const e = (dadosApp.pagamentos[rid] || {})[nome];
+                if (e && !e.pago) lista.push({ rid, valor: Number(e.valor) || 0 });
+            });
+            return lista;
+        }
+        function bloqueadoPorDebito(nome) { return debitosAnteriores(nome).length > 0; }
+        function mensagemDebito(nome) {
+            const total = debitosAnteriores(nome).reduce((t, d) => t + d.valor, 0);
+            return `Você tem pagamento pendente de rodada anterior (${formatarMoeda(total)}). Regularize com o administrador para fazer novos palpites.`;
+        }
+
+        function atualizarCardPagamento() {
+            const card = document.getElementById('card-pagamento');
+            if (!card) return;
+            if (!usuarioLogado || ehAdmin()) { card.className = "hidden"; return; }
+            const linhas = [];
+            const deb = debitosAnteriores(usuarioLogado);
+            if (deb.length) {
+                linhas.push(`⚠️ <strong>Pagamento pendente de rodada anterior: ${formatarMoeda(deb.reduce((t, d) => t + d.valor, 0))}.</strong> Enquanto não regularizar com o administrador, você não pode fazer novos palpites.`);
+            }
+            let pago = false;
+            if (participantesFechados().includes(usuarioLogado)) {
+                const e = pagamentoAtual(usuarioLogado);
+                pago = !!(e && e.pago);
+                const valor = formatarMoeda(dadosApp.valorPalpite);
+                linhas.push(pago
+                    ? `💳 Pagamento desta rodada: <strong class="text-emerald-400">✅ Pago</strong> (${valor})${e.pagoEm ? ' em ' + formatarDataHora(e.pagoEm) : ''}`
+                    : `💳 Pagamento desta rodada: <strong class="text-amber-400">⏳ Pendente</strong> (${valor}) — pague ao administrador`);
+            }
+            if (!linhas.length) { card.className = "hidden"; return; }
+            card.className = deb.length
+                ? "bg-red-500/10 border border-red-500/30 rounded-2xl p-3 text-xs text-red-200 space-y-1"
+                : pago ? "bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-3 text-xs text-emerald-200 space-y-1"
+                       : "bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3 text-xs text-amber-200 space-y-1";
+            card.innerHTML = linhas.map(l => `<p>${l}</p>`).join('');
+        }
+
+        let listaPagAtual = [];
+        let listaDebAnteriores = [];
+        function renderizarPagamentos() {
+            const lista = document.getElementById('pag-lista');
+            const resumo = document.getElementById('pag-resumo');
+            const anteriores = document.getElementById('pag-anteriores');
+            if (!lista || !resumo || !anteriores) return;
+            const valor = Number(dadosApp.valorPalpite) || 0;
+            listaPagAtual = participantesFechados().sort((a, b) => a.localeCompare(b));
+            const pagos = listaPagAtual.filter(estaPago).length;
+            const pend = listaPagAtual.length - pagos;
+            resumo.innerHTML = `
+                <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3">
+                    <span class="text-[10px] uppercase font-bold text-emerald-400 block">Pago</span>
+                    <strong class="text-white text-sm">${formatarMoeda(pagos * valor)}</strong>
+                    <span class="block text-[11px] text-slate-400">${pagos} participante(s)</span>
+                </div>
+                <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
+                    <span class="text-[10px] uppercase font-bold text-amber-400 block">Pendente</span>
+                    <strong class="text-white text-sm">${formatarMoeda(pend * valor)}</strong>
+                    <span class="block text-[11px] text-slate-400">${pend} participante(s)</span>
+                </div>`;
+            lista.innerHTML = listaPagAtual.length ? listaPagAtual.map((nome, i) => {
+                const e = pagamentoAtual(nome);
+                const pago = !!(e && e.pago);
+                return `<div class="flex items-center justify-between gap-2 bg-slate-800/60 px-3 py-2 rounded-xl text-xs">
+                    <span class="min-w-0">
+                        <strong class="text-white block truncate">${escapeHtml(nome)}</strong>
+                        <span class="text-[10px] text-slate-400">${formatarMoeda(valor)}${pago && e.pagoEm ? ' • pago em ' + formatarDataHora(e.pagoEm) : ''}</span>
+                    </span>
+                    <span class="flex items-center gap-2 shrink-0">
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-md border ${pago ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-amber-500/15 text-amber-400 border-amber-500/30'}">${pago ? '✅ Pago' : '⏳ Pendente'}</span>
+                        <button type="button" onclick="alternarPagamentoAtual(${i})" class="text-[11px] font-bold hover:underline ${pago ? 'text-slate-400' : 'text-emerald-400'}">${pago ? 'Desfazer' : 'Marcar pago'}</button>
+                    </span>
+                </div>`;
+            }).join('') : `<p class="text-xs text-slate-400">Nenhum participante com palpite fechado nesta rodada.</p>`;
+
+            listaDebAnteriores = [];
+            Object.keys(dadosApp.pagamentos || {}).forEach(rid => {
+                if (rid === rodadaId()) return;
+                Object.entries(dadosApp.pagamentos[rid] || {}).forEach(([nome, e]) => {
+                    if (e && !e.pago && dadosApp.amigos.includes(nome)) listaDebAnteriores.push({ rid, nome, valor: Number(e.valor) || 0 });
+                });
+            });
+            listaDebAnteriores.sort((a, b) => Number(a.rid) - Number(b.rid) || a.nome.localeCompare(b.nome));
+            anteriores.innerHTML = listaDebAnteriores.length ? listaDebAnteriores.map((d, i) => `
+                <div class="flex items-center justify-between gap-2 bg-slate-800/60 px-3 py-2 rounded-xl text-xs">
+                    <span class="min-w-0">
+                        <strong class="text-white block truncate">${escapeHtml(d.nome)}</strong>
+                        <span class="text-[10px] text-slate-400">Rodada ${escapeHtml(d.rid)} • ${formatarMoeda(d.valor)}</span>
+                    </span>
+                    <button type="button" onclick="quitarDebito(${i})" class="text-[11px] font-bold text-emerald-400 hover:underline shrink-0">Marcar pago</button>
+                </div>`).join('') : `<p class="text-xs text-slate-400">Nenhum débito pendente de rodadas anteriores. 🎉</p>`;
+        }
+
+        async function alternarPagamentoAtual(i) {
+            const nome = listaPagAtual[i];
+            if (!nome) return;
+            const novo = !estaPago(nome);
+            if (!confirm(`Marcar o pagamento de ${nome} como ${novo ? 'PAGO' : 'PENDENTE'}?`)) return;
+            const rid = rodadaId();
+            const pag = dadosApp.pagamentos[rid] = dadosApp.pagamentos[rid] || {};
+            pag[nome] = { valor: Number(dadosApp.valorPalpite) || 0, pago: novo, pagoEm: novo ? new Date().toISOString() : "" };
+            renderizarTudo();
+            await salvarNuvem();
+        }
+
+        async function quitarDebito(i) {
+            const d = listaDebAnteriores[i];
+            if (!d) return;
+            if (!confirm(`Marcar como PAGO o débito de ${d.nome} (${formatarMoeda(d.valor)}, rodada ${d.rid})?`)) return;
+            const e = dadosApp.pagamentos[d.rid][d.nome];
+            e.pago = true;
+            e.pagoEm = new Date().toISOString();
+            renderizarTudo();
+            await salvarNuvem();
+        }
+
+        // ===== Rodadas, histórico e temporada =====
+        function posicionar(linhas) {
+            let pos = 0, anterior = null;
+            linhas.forEach((r, i) => { if (r.pts !== anterior) { pos = i + 1; anterior = r.pts; } r.pos = pos; });
+            return linhas;
+        }
+
+        function arquivarRodada() {
+            const fechados = participantesFechados();
+            if (!fechados.length) return null;
+            const linhas = posicionar(calcularRanking('todos').filter(r => r.jogos > 0));
+            const { total } = calcularPote();
+            const lideres = linhas.filter(r => r.pos === 1 && r.pts > 0);
+            const cada = lideres.length ? Math.floor(Math.round(total * 100) / lideres.length) / 100 : 0;
+            const rid = rodadaId();
+            const valor = Number(dadosApp.valorPalpite) || 0;
+            const pag = dadosApp.pagamentos[rid] = dadosApp.pagamentos[rid] || {};
+            fechados.forEach(n => { const e = pag[n] || {}; pag[n] = { valor, pago: !!e.pago, pagoEm: e.pagoEm || "" }; });
+            const entrada = {
+                numero: Number(dadosApp.rodadaNumero) || 1,
+                encerradaEm: new Date().toISOString(),
+                jogos: dadosApp.partidas.filter(p => !p.situacao).length,
+                participantes: fechados.length,
+                pote: total,
+                campeoes: lideres.map(l => l.nome),
+                pts: lideres.length ? lideres[0].pts : 0,
+                premioCada: cada,
+                ranking: linhas.map(r => ({ nome: r.nome, pts: r.pts, acertos: r.acertos, jogos: r.jogos, pos: r.pos }))
+            };
+            dadosApp.historico.push(entrada);
+            dadosApp.rodadaNumero = (Number(dadosApp.rodadaNumero) || 1) + 1;
+            return entrada;
+        }
+
+        function calcularTemporada() {
+            const mapa = {};
+            (dadosApp.historico || []).forEach(h => (h.ranking || []).forEach(r => {
+                const m = mapa[r.nome] = mapa[r.nome] || { nome: r.nome, rodadas: 0, titulos: 0, pts: 0 };
+                m.rodadas++;
+                m.pts += Number(r.pts) || 0;
+                if (r.pos === 1 && r.pts > 0) m.titulos++;
+            }));
+            return posicionar(Object.values(mapa).sort((a, b) => b.pts - a.pts || a.nome.localeCompare(b.nome)));
+        }
+
+        function renderizarTemporada() {
+            const corpo = document.getElementById('tabela-temporada');
+            const hist = document.getElementById('lista-historico');
+            if (!corpo || !hist) return;
+            const linhas = calcularTemporada();
+            corpo.innerHTML = linhas.length ? linhas.map(r => `
+                <tr>
+                    <td class="py-2 px-2 text-center font-bold ${r.pos === 1 ? 'text-amber-400' : 'text-slate-400'}">${r.pos === 1 ? '🏆 ' : ''}${r.pos}º</td>
+                    <td class="py-2 px-2 font-semibold text-white">${escapeHtml(r.nome)}</td>
+                    <td class="py-2 px-2 text-center text-slate-300">${r.rodadas}</td>
+                    <td class="py-2 px-2 text-center text-amber-400 font-bold">${r.titulos}</td>
+                    <td class="py-2 px-2 text-right font-black text-white">${r.pts}</td>
+                </tr>`).join('') : `<tr><td colspan="5" class="py-4 text-center text-slate-400">Ainda não há rodadas encerradas.</td></tr>`;
+
+            const rodadas = [...(dadosApp.historico || [])].reverse();
+            hist.innerHTML = rodadas.length ? rodadas.map(h => {
+                const campeoes = (h.campeoes || []).length
+                    ? `🏆 <strong class="text-white">${h.campeoes.map(escapeHtml).join(', ')}</strong> (${h.pts} pt${h.pts === 1 ? '' : 's'}) • Prêmio ${formatarMoeda(h.premioCada)}${h.campeoes.length > 1 ? ' para cada' : ''}`
+                    : `Sem vencedor definido`;
+                const linhasRank = (h.ranking || []).map(r => `<div class="flex justify-between text-[11px]"><span>${r.pos}º ${escapeHtml(r.nome)}</span><span class="text-slate-400">${r.pts} pt(s) • ${r.acertos}/${r.jogos}</span></div>`).join('');
+                return `<details class="bg-slate-800/60 rounded-xl px-3 py-2 text-xs text-slate-300">
+                    <summary class="cursor-pointer">
+                        <strong class="text-white">Rodada ${h.numero}</strong> <span class="text-slate-400">• ${formatarDataHora(h.encerradaEm)}</span><br>
+                        <span class="text-[11px]">${campeoes}</span>
+                    </summary>
+                    <div class="mt-2 space-y-1 border-t border-slate-700 pt-2">
+                        <div class="text-[11px] text-slate-400">${h.participantes} participante(s) • ${h.jogos} jogo(s) • Pote ${formatarMoeda(h.pote)}</div>
+                        ${linhasRank}
+                    </div>
+                </details>`;
+            }).join('') : `<p class="text-xs text-slate-400">Nenhuma rodada encerrada ainda.</p>`;
+        }
+
+        async function encerrarRodada() {
+            if (!dadosApp.partidas.length && !participantesFechados().length) { alert("Não há nada para encerrar."); return; }
+            const semResultado = dadosApp.partidas.filter(p => !p.situacao && !p.resultado).length;
+            const aviso = semResultado ? ` ATENÇÃO: ${semResultado} jogo(s) ainda sem resultado lançado.` : '';
+            if (!confirmarExclusaoDupla(`a rodada atual (ela será arquivada no Histórico; jogos, resultados e palpites serão apagados).${aviso}`)) return;
+            const arquivada = arquivarRodada();
+            dadosApp.partidas = [];
+            dadosApp.palpites = {};
+            renderizarTudo();
+            await salvarNuvem();
+            alert(arquivada
+                ? `Rodada ${arquivada.numero} arquivada no Histórico. Já pode cadastrar os jogos da próxima rodada.`
+                : "Rodada encerrada. Nada foi arquivado, pois ninguém tinha palpite fechado.");
+        }
+
+        // ===== Regras de edição pelo administrador após o prazo =====
+        function bloqueadoPeloPrazo(acao) {
+            if (prazoEncerrado()) { alert(`O prazo dos palpites já terminou: não é possível ${acao}.`); return true; }
+            return false;
+        }
+
+        function paraInputLocal(d) {
+            const p = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+        }
+
+        let editandoPartidaId = null;
+        function abrirEditarPartida(i) {
+            if (bloqueadoPeloPrazo("editar jogos")) return;
+            const p = dadosApp.partidas[i];
+            if (!p) return;
+            editandoPartidaId = String(p.id);
+            document.getElementById('edit-casa').value = p.casa;
+            document.getElementById('edit-visitante').value = p.visitante;
+            const sel = document.getElementById('edit-campeonato');
+            const torneios = dadosApp.torneios.includes(p.campeonato) ? dadosApp.torneios : [...dadosApp.torneios, p.campeonato];
+            sel.innerHTML = torneios.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+            sel.value = p.campeonato;
+            const ini = inicioPartida(p);
+            document.getElementById('edit-data').value = ini ? paraInputLocal(ini) : '';
+            document.getElementById('modal-editar-partida')?.classList.remove('hidden');
+        }
+
+        function fecharModalEditarPartida() {
+            document.getElementById('modal-editar-partida')?.classList.add('hidden');
+            editandoPartidaId = null;
+        }
+
+        async function salvarEdicaoPartida() {
+            if (bloqueadoPeloPrazo("editar jogos")) { fecharModalEditarPartida(); return; }
+            const p = dadosApp.partidas.find(x => String(x.id) === editandoPartidaId);
+            if (!p) { fecharModalEditarPartida(); return; }
+            const casa = document.getElementById('edit-casa').value.trim();
+            const visitante = document.getElementById('edit-visitante').value.trim();
+            const campeonato = document.getElementById('edit-campeonato').value || p.campeonato;
+            const dataBruta = document.getElementById('edit-data').value;
+            if (!casa || !visitante) { alert("Preencha o time da casa e o visitante."); return; }
+            let dt = null;
+            if (dataBruta) {
+                dt = new Date(dataBruta);
+                if (isNaN(dt)) { alert("Data e hora inválidas."); return; }
+            } else if (!inicioPartida(p)) {
+                alert("Informe a data e a hora do jogo.");
+                return;
+            }
+            const temPalpites = Object.values(dadosApp.palpites).some(r => r && r.escolhas && r.escolhas[String(p.id)]);
+            if (temPalpites && (casa !== p.casa || visitante !== p.visitante) &&
+                !confirm("Já existem palpites para este jogo. Alterar os times pode confundir os participantes. Continuar?")) return;
+            p.casa = casa;
+            p.visitante = visitante;
+            p.campeonato = campeonato;
+            if (dt) {
+                p.inicio = dt.toISOString();
+                p.data = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + " • " + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            }
+            fecharModalEditarPartida();
+            renderizarTudo();
+            await salvarNuvem();
+        }
+
+        async function definirSituacaoIdx(i, situacao) {
+            const p = dadosApp.partidas[i];
+            if (!p) return;
+            const rot = situacao === 'adiado' ? 'ADIAR' : situacao === 'cancelado' ? 'CANCELAR' : 'REATIVAR';
+            if (!confirm(`${rot} a partida "${p.casa} x ${p.visitante}"?` + (situacao ? '\n\nO jogo continuará visível, com o selo, mas não pontuará para ninguém.' : ''))) return;
+            p.situacao = situacao;
+            if (situacao) p.resultado = "";
+            renderizarTudo();
+            await salvarNuvem();
+        }
+
+        function podeVerPalpites() { return ehAdmin() || prazoEncerrado(); }
+
         // ===== Abas por perfil =====
         function atualizarAbasPorPerfil() {
             const admin = ehAdmin();
-            ['ver-palpites', 'admin'].forEach(n => document.getElementById(`tab-btn-${n}`)?.classList.toggle('hidden', !admin));
+            const visiveis = { 'palpites': true, 'ver-palpites': podeVerPalpites(), 'ranking': true, 'regras': true, 'pagamentos': admin, 'admin': admin };
+            let n = 0;
+            Object.entries(visiveis).forEach(([nome, v]) => {
+                document.getElementById(`tab-btn-${nome}`)?.classList.toggle('hidden', !v);
+                if (v) n++;
+            });
             const barra = document.getElementById('barra-abas');
-            if (barra) { barra.classList.toggle('grid-cols-5', admin); barra.classList.toggle('grid-cols-3', !admin); }
-            if (!admin && ['ver-palpites', 'admin'].includes(abaAtual)) mudarAba('palpites');
+            if (barra) {
+                ['grid-cols-3', 'grid-cols-4', 'grid-cols-5', 'grid-cols-6'].forEach(c => barra.classList.remove(c));
+                barra.classList.add('grid-cols-' + Math.min(6, Math.max(3, n)));
+            }
+            if (!visiveis[abaAtual]) mudarAba('palpites');
         }
 
         // ===== Instalação (PWA) =====
@@ -1898,7 +2381,7 @@
 
         function abaPorHash() {
             const h = (location.hash || "").replace('#', '');
-            if (['palpites', 'ver-palpites', 'ranking', 'regras', 'admin'].includes(h)) mudarAba(h);
+            if (['palpites', 'ver-palpites', 'ranking', 'regras', 'pagamentos', 'admin'].includes(h)) mudarAba(h);
         }
 
         window.addEventListener("DOMContentLoaded", () => {
@@ -1925,6 +2408,7 @@
     </script>
 </body>
 </html>
+
 
 
 
