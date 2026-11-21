@@ -2067,7 +2067,7 @@
                 const valor = formatarMoeda(dadosApp.valorPalpite);
                 linhas.push(pago
                     ? `💳 Pagamento desta rodada: <strong class="text-emerald-400">✅ Pago</strong> (${valor})${e.pagoEm ? ' em ' + formatarDataHora(e.pagoEm) : ''}`
-                    : `💳 Pagamento desta rodada: <strong class="text-amber-400">⏳ Pendente</strong> (${valor}) — pague ao administrador`);
+                    : `💳 Pagamento desta rodada: <strong class="text-amber-400">⏳ Pendente</strong> (${valor}) - Debito pendente!`);
             }
             if (!linhas.length) { card.className = "hidden"; return; }
             card.className = deb.length
