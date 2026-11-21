@@ -248,14 +248,13 @@
                     </div>
                     <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800 space-y-1.5">
                         <strong class="text-white block">🔒 4. Confirmação e Fechamento dos Palpites</strong>
-                        <p>O palpite será considerado válido somente após o envio pelo WhatsApp e a dupla confirmação da participação.</p>
+                        <p>O palpite será considerado válido somente após fechar e enviar meu palpite</p>
                         <p>Após a confirmação, o palpite será considerado <strong>FECHADO</strong>, não podendo ser alterado pelo participante.</p>
-                        <p>Caso seja necessária qualquer alteração após a confirmação, o participante deverá entrar em contato diretamente com o administrador, que será responsável por avaliar e autorizar a solicitação.</p>
-                        <p>Somente os palpites devidamente fechados serão contabilizados no ranking e participarão da divisão do prêmio.</p>
+                        <p>Caso seja necessária qualquer alteração após a confirmação, o participante deverá entrar em contato diretamente com o administrador, que será responsável por avaliar e autorizar a solicitação.</p>                    
                     </div>
                     <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800 space-y-1.5">
                         <strong class="text-white block">⏰ 5. Prazo para Participação</strong>
-                        <p>O prazo para envio e confirmação dos palpites será encerrado <strong>2 horas antes</strong> do início do primeiro jogo.</p>
+                        <p>O prazo para envio e confirmação dos palpites será encerrado <strong>2 horas antes</strong> do início do primeiro jogo cadastrado.</p>
                         <p>Após esse horário, não serão aceitos novos palpites ou confirmações de participação.</p>
                     </div>
                     <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800 space-y-1.5">
@@ -1056,7 +1055,7 @@
             const trava = travado ? 'disabled' : '';
             const extra = travado ? ' opacity-70 cursor-not-allowed' : '';
 
-            container.innerHTML = dadosApp.partidas.map((partida, i) => {
+            container.innerHTML = partidasOrdenadas().map(({ p: partida, i }) => {
                 const escolhaAtual = escolhasUsuario[String(partida.id)] || "";
                 const btnClass = (op) => escolhaAtual === op
                     ? "bg-emerald-600 text-white border-emerald-500 font-bold"
@@ -1926,6 +1925,7 @@
     </script>
 </body>
 </html>
+
 
 
 
