@@ -227,8 +227,8 @@
                     </table>
                 </div>
             </div>
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
-                <h2 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-trophy text-amber-400"></i> Ranking da Temporada</h2>
+            <div data-card="temporada" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+                <div class="flex justify-between items-center"><h2 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-trophy text-amber-400"></i> Ranking da Temporada</h2><button type="button" data-toggle-card onclick="alternarCard(this)" class="text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg shrink-0" title="Recolher / expandir"><i class="fa-solid fa-chevron-up"></i></button></div>
                 <p class="text-[11px] text-slate-400">Soma dos pontos das rodadas já encerradas. Empatados ocupam a mesma posição.</p>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs">
@@ -496,7 +496,7 @@
         let abaAtual = 'palpites';
         let sincronizandoAgora = false;
 
-        const JSONBIN_MASTER_KEY = "$2a$10$lxwiD.gEEta/Lok2tarCS.dpEhTq8bCxm1hCaZQq9jPTjWuH7Myye";
+        const JSONBIN_MASTER_KEY = "$2a$10$HQsEtj9W.z5P8OqQKS7QUus2O3KmgfdCn3IpG.MmT4mSMGdaUEiK6";
         const BIN_ID_FIXO = "6afe26f5ffd5d16053cce3f2";
         let JSONBIN_BIN_ID = BIN_ID_FIXO || localStorage.getItem('bolao_bin_id') || "";
 
@@ -651,11 +651,11 @@
 
         function tokenSessao(u) { return sha256Hex("sessao|" + u + "|" + ((dadosApp.senhasUsuarios || {})[u] || "")); }
         function salvarSessao() {
-            try { localStorage.setItem(SESSAO_KEY, JSON.stringify({ u: usuarioLogado, t: tokenSessao(usuarioLogado) })); } catch (e) {}
+            try { sessionStorage.setItem(SESSAO_KEY, JSON.stringify({ u: usuarioLogado, t: tokenSessao(usuarioLogado) })); } catch (e) {}
         }
         function restaurarSessao() {
             try {
-                const sess = JSON.parse(localStorage.getItem(SESSAO_KEY) || "null");
+                const sess = JSON.parse(sessionStorage.getItem(SESSAO_KEY) || "null");
                 if (sess && sess.u && dadosApp.amigos.includes(sess.u) && sess.t === tokenSessao(sess.u)) {
                     usuarioLogado = sess.u;
                     if (sess.u === "Admin") { adminLogado = true; verPalpitesLogado = true; }
@@ -663,7 +663,7 @@
                 }
             } catch (e) {}
             usuarioLogado = "";
-            try { localStorage.removeItem(SESSAO_KEY); } catch (e) {}
+            try { sessionStorage.removeItem(SESSAO_KEY); } catch (e) {}
         }
         function ehAdmin() { return usuarioLogado === "Admin"; }
 
@@ -895,7 +895,7 @@
                 if (headerUser) headerUser.textContent = usuarioLogado;
             } else {
                 usuarioLogado = "";
-                localStorage.removeItem(SESSAO_KEY);
+                sessionStorage.removeItem(SESSAO_KEY);
                 if (modal) modal.classList.remove('hidden');
                 if (headerUser) headerUser.textContent = "Usuário";
             }
@@ -934,7 +934,7 @@
             usuarioLogado = "";
             adminLogado = false;
             verPalpitesLogado = false;
-            localStorage.removeItem(SESSAO_KEY);
+            sessionStorage.removeItem(SESSAO_KEY);
             atualizarInterfaceLogin();
         }
 
@@ -1431,8 +1431,10 @@
 
             if (filtroSelect) {
                 const atual = filtroSelect.value;
+                const naRodada = new Set(dadosApp.partidas.map(p => p.campeonato).filter(Boolean));
+                const campeonatos = [...dadosApp.torneios.filter(t => naRodada.has(t)), ...[...naRodada].filter(t => !dadosApp.torneios.includes(t))];
                 filtroSelect.innerHTML = `<option value="todos">Geral (Todos)</option>` +
-                    dadosApp.torneios.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+                    campeonatos.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
                 if ([...filtroSelect.options].some(o => o.value === atual)) filtroSelect.value = atual;
             }
             const compFiltro = filtroSelect ? filtroSelect.value : 'todos';
@@ -1787,7 +1789,7 @@
             if (!confirmarExclusaoDupla("o cache local deste aparelho")) return;
             localStorage.removeItem(CACHE_LOCAL_KEY);
             localStorage.removeItem(PENDENTE_KEY);
-            localStorage.removeItem(SESSAO_KEY);
+            sessionStorage.removeItem(SESSAO_KEY);
             usuarioLogado = "";
             dadosApp = validarGarantiaAdmin(DADOS_PADRAO);
             // Força a reconstrução do select de login
@@ -2385,7 +2387,7 @@
         }
 
         window.addEventListener("DOMContentLoaded", () => {
-            try { localStorage.removeItem('bolao_usuario_logado'); } catch (e) {}
+            try { localStorage.removeItem('bolao_usuario_logado'); localStorage.removeItem(SESSAO_KEY); } catch (e) {}
             document.getElementById('login-input-senha')?.addEventListener('keydown', e => {
                 if (e.key === 'Enter') fazerLoginUsuario();
             });
@@ -2408,6 +2410,7 @@
     </script>
 </body>
 </html>
+
 
 
 
