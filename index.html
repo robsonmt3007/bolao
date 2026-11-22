@@ -99,9 +99,6 @@
 
         <!-- ABA 1: MEUS PALPITES -->
         <div id="tab-palpites" class="space-y-4">
-            <div id="card-prazo" class="hidden"></div>
-            <div id="card-pagamento" class="hidden"></div>
-            <div id="card-admin-aviso" class="hidden bg-slate-900 border border-slate-700 rounded-2xl p-3 text-xs text-slate-300">👑 Você está como <strong>administrador</strong>: acompanhe os jogos por aqui, mas o Admin não participa dos palpites.</div>
             <div class="bg-slate-900 border border-emerald-500/20 rounded-2xl p-4 shadow-xl flex items-center justify-between">
                 <div>
                     <span class="text-[10px] uppercase font-bold text-emerald-400 block mb-0.5">Pote Acumulado (Confirmados)</span>
@@ -117,6 +114,20 @@
                     </button>
                 </div>
             </div>
+            <div id="card-bloqueado" class="hidden bg-slate-900 border border-amber-500/30 rounded-2xl p-6 shadow-2xl text-center space-y-3">
+                <div class="w-14 h-14 bg-amber-500/10 border border-amber-500/30 rounded-full flex items-center justify-center mx-auto text-amber-400 text-2xl">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h3 class="text-base font-bold text-white">Palpites ainda não liberados</h3>
+                <p class="text-xs text-slate-300 leading-relaxed">Os jogos desta rodada ainda estão sendo preparados. Assim que o administrador liberar, você poderá fazer os seus palpites por aqui.</p>
+                <p class="text-[11px] text-slate-300">Para verificar se já foi liberado, toque no botão <strong class="text-emerald-400">Atualizar</strong>, logo acima.</p>
+                <p class="text-[11px] text-slate-400">Enquanto isso, confira o Ranking e as Regras. ⚽</p>
+            </div>
+            <div id="palpites-conteudo" class="space-y-4">
+            <div id="card-prazo" class="hidden"></div>
+            <div id="card-pagamento" class="hidden"></div>
+            <div id="card-admin-aviso" class="hidden bg-slate-900 border border-slate-700 rounded-2xl p-3 text-xs text-slate-300">👑 Você está como <strong>administrador</strong>: acompanhe os jogos por aqui, mas o Admin não participa dos palpites.</div>
+            
 
             <div id="card-contador" class="bg-slate-900 border border-slate-800 rounded-2xl p-3 flex items-center justify-between gap-2">
                 <div>
@@ -131,6 +142,7 @@
             <button type="button" onclick="gerarComprovanteWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg">
                 <i class="fa-brands fa-whatsapp text-lg"></i> <span id="btn-fechar-palpite-txt">Fechar e Enviar Meu Palpite</span>
             </button>
+        </div>
         </div>
 
         <!-- ABA 2: VER PALPITES DOS PARTICIPANTES (RESTRITO ADMIN) -->
@@ -246,8 +258,8 @@
                 </div>
             </div>
 
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
-                <h2 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-400"></i> Histórico de Rodadas</h2>
+            <div data-card="historico" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+                <div class="flex justify-between items-center"><h2 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-400"></i> Histórico de Rodadas</h2><button type="button" data-toggle-card onclick="alternarCard(this)" class="text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg shrink-0" title="Recolher / expandir"><i class="fa-solid fa-chevron-up"></i></button></div>
                 <div id="lista-historico" class="space-y-2"></div>
             </div>
         </div>
@@ -283,6 +295,7 @@
                     </div>
                     <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800 space-y-1.5">
                         <strong class="text-white block">⏰ 5. Prazo para Participação</strong>
+                        <p>Os palpites só ficam disponíveis depois que o administrador cadastrar os jogos da rodada e realizar a liberação.</p>
                         <p>O prazo para envio e confirmação dos palpites será encerrado <strong>2 horas antes</strong> do início do primeiro jogo.</p>
                         <p>Após esse horário, não serão aceitos novos palpites ou confirmações de participação.</p>
                         <p>Encerrado o prazo, os palpites de todos os participantes ficam visíveis a todos, para conferência, não podendo mais ser alterado pelo administrador.</p>
@@ -391,9 +404,13 @@
                         <button type="button" data-toggle-card onclick="alternarCard(this)" class="text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg shrink-0" title="Recolher / expandir"><i class="fa-solid fa-chevron-up"></i></button>
                     </div>
                     <div id="lista-admin-partidas" class="space-y-2.5"></div>
-                    <button type="button" id="btn-limpar-jogos" onclick="limparTodosJogos()" class="w-full bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 text-xs font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-trash-can"></i> Limpar Todos os Jogos
-                    </button>
+                    <p id="admin-liberacao-info" class="text-[11px] text-slate-400"></p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" id="btn-liberar-palpites" onclick="alternarLiberacaoPalpites()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl transition shadow">Liberar Palpites</button>
+                        <button type="button" id="btn-limpar-jogos" onclick="limparTodosJogos()" class="w-full bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 text-xs font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 leading-tight">
+                            <i class="fa-solid fa-trash-can"></i> Limpar Todos os Jogos
+                        </button>
+                    </div>
                 </div>
 
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-2 text-center">
@@ -787,6 +804,7 @@
             limiteJogosPorAposta: 0,
             valorPalpite: 10,
             fechamentoAutomatico: true,
+            palpitesLiberados: false,
             rodadaNumero: 1,
             pagamentos: {},
             historico: []
@@ -834,6 +852,8 @@
                 limiteJogosPorAposta: Number(base.limiteJogosPorAposta) || 0,
                 valorPalpite: (base.valorPalpite !== undefined && base.valorPalpite !== null && isFinite(valor) && valor >= 0) ? valor : 10,
                 fechamentoAutomatico: base.fechamentoAutomatico !== false,
+                // dados antigos (sem o campo): uma rodada já cadastrada continua liberada
+                palpitesLiberados: base.palpitesLiberados === undefined ? partidas.length > 0 : !!base.palpitesLiberados,
                 rodadaNumero: Number(base.rodadaNumero) >= 1 ? Math.floor(Number(base.rodadaNumero)) : 1,
                 pagamentos: base.pagamentos && typeof base.pagamentos === 'object' ? base.pagamentos : {},
                 historico: Array.isArray(base.historico) ? base.historico : []
@@ -1091,6 +1111,7 @@
         }
 
         function atualizarContadorPalpites() {
+            atualizarBloqueioPalpites();
             const el = document.getElementById('info-contador');
             const est = document.getElementById('info-estado-palpite');
             const txt = document.getElementById('btn-fechar-palpite-txt');
@@ -1098,7 +1119,7 @@
             const admin = ehAdmin();
             document.getElementById('card-contador')?.classList.toggle('hidden', admin);
             document.getElementById('card-admin-aviso')?.classList.toggle('hidden', !admin);
-            document.getElementById('btn-importar-zap')?.classList.toggle('hidden', admin);
+            document.getElementById('btn-importar-zap')?.classList.toggle('hidden', admin || (!!usuarioLogado && !palpitesAbertos()));
             if (btnFechar) btnFechar.classList.toggle('hidden', admin);
             atualizarCardPagamento();
             if (admin) return;
@@ -1191,6 +1212,7 @@
             if (!partida) return;
             if (!usuarioLogado) { atualizarInterfaceLogin(); return; }
             if (ehAdmin()) { alert("O administrador não participa dos palpites."); return; }
+            if (!palpitesAbertos()) { alert(MSG_PALPITES_BLOQUEADOS); return; }
             if (bloqueadoPorDebito(usuarioLogado)) { alert(mensagemDebito(usuarioLogado)); return; }
             if (prazoEncerrado()) { alert("O prazo para palpites já encerrou."); renderizarPartidasPalpites(); return; }
             if (!dadosApp.palpites[usuarioLogado]) {
@@ -1520,6 +1542,23 @@
 
             const bloq = prazoEncerrado();
             document.getElementById('aviso-prazo-admin')?.classList.toggle('hidden', !bloq);
+            const liberado = palpitesAbertos();
+            const nJogos = dadosApp.partidas.length;
+            const infoLib = document.getElementById('admin-liberacao-info');
+            const btnLib = document.getElementById('btn-liberar-palpites');
+            if (infoLib) {
+                infoLib.textContent = !nJogos ? "Cadastre os jogos da rodada para poder liberar os palpites."
+                    : liberado ? `✅ Palpites LIBERADOS para os participantes (${nJogos} jogo(s)).`
+                    : `🔒 Palpites BLOQUEADOS. ${nJogos} jogo(s) cadastrado(s): confira e libere quando estiver pronto.`;
+            }
+            if (btnLib) {
+                btnLib.textContent = liberado ? "Suspender liberação" : "Liberar Palpites";
+                btnLib.className = "w-full text-xs font-bold py-2.5 rounded-xl transition shadow " + (liberado ? "bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700" : "bg-emerald-600 hover:bg-emerald-500 text-white");
+                const trava = bloq || (!liberado && !nJogos);
+                btnLib.disabled = trava;
+                btnLib.classList.toggle('opacity-50', trava);
+                btnLib.classList.toggle('cursor-not-allowed', trava);
+            }
             ['input-valor-palpite', 'btn-salvar-valor', 'input-limite-jogos', 'btn-salvar-limite', 'btn-toggle-prazo', 'btn-add-partida', 'btn-limpar-jogos'].forEach(id => {
                 const el = document.getElementById(id);
                 if (!el) return;
@@ -1629,6 +1668,7 @@
             if (arquiva) arquivarRodada();
             dadosApp.partidas = [];
             dadosApp.palpites = {};
+            dadosApp.palpitesLiberados = false;
             renderizarTudo();
             await salvarNuvem();
         }
@@ -1648,6 +1688,7 @@
             if (!alvo) return;
             if (!confirmarExclusaoDupla(`a partida "${alvo.casa} x ${alvo.visitante}"`)) return;
             dadosApp.partidas.splice(i, 1);
+            if (!dadosApp.partidas.length) dadosApp.palpitesLiberados = false;
             renderizarTudo();
             await salvarNuvem();
         }
@@ -1824,6 +1865,7 @@
             }
 
             if (ehAdmin()) { alert("O administrador não participa dos palpites."); return; }
+            if (!palpitesAbertos()) { alert(MSG_PALPITES_BLOQUEADOS); return; }
             if (bloqueadoPorDebito(usuarioLogado)) { alert(mensagemDebito(usuarioLogado)); return; }
             if (dadosApp.palpites[usuarioLogado].fechado === true) { alert("Seu palpite já está fechado."); return; }
             if (prazoEncerrado()) { alert("O prazo para palpites já encerrou."); return; }
@@ -1875,6 +1917,7 @@
         async function gerarComprovanteWhatsApp() {
             if (!usuarioLogado) { atualizarInterfaceLogin(); return; }
             if (ehAdmin()) { alert("O administrador não participa dos palpites."); return; }
+            if (!palpitesAbertos()) { alert(MSG_PALPITES_BLOQUEADOS); return; }
             const reg = dadosApp.palpites[usuarioLogado];
             const escolhas = (reg && reg.escolhas) || {};
             const itens = dadosApp.partidas.filter(p => escolhas[String(p.id)]).map(p => {
@@ -2243,6 +2286,7 @@
             const arquivada = arquivarRodada();
             dadosApp.partidas = [];
             dadosApp.palpites = {};
+            dadosApp.palpitesLiberados = false;
             renderizarTudo();
             await salvarNuvem();
             alert(arquivada
@@ -2328,6 +2372,36 @@
 
         function podeVerPalpites() { return ehAdmin() || prazoEncerrado(); }
 
+        // ===== Liberação dos palpites pelo administrador =====
+        const MSG_PALPITES_BLOQUEADOS = "Palpites ainda não liberados. Os jogos desta rodada estão sendo preparados: aguarde a liberação do administrador.";
+
+        function palpitesAbertos() { return !!dadosApp.palpitesLiberados && dadosApp.partidas.length > 0; }
+
+        function atualizarBloqueioPalpites() {
+            const bloqueado = !!usuarioLogado && !ehAdmin() && !palpitesAbertos();
+            document.getElementById('card-bloqueado')?.classList.toggle('hidden', !bloqueado);
+            document.getElementById('palpites-conteudo')?.classList.toggle('hidden', bloqueado);
+        }
+
+        async function alternarLiberacaoPalpites() {
+            if (!ehAdmin()) return;
+            if (palpitesAbertos()) {
+                if (bloqueadoPeloPrazo("suspender a liberação")) return;
+                if (participantesFechados().length) { alert("Já existem palpites fechados: não é possível suspender a liberação."); return; }
+                if (!confirm("Suspender a liberação? Os participantes voltarão a ver a mensagem de palpites não liberados.")) return;
+                dadosApp.palpitesLiberados = false;
+            } else {
+                if (!dadosApp.partidas.length) { alert("Cadastre pelo menos um jogo antes de liberar os palpites."); return; }
+                if (bloqueadoPeloPrazo("liberar palpites")) return;
+                const ip = infoPrazo();
+                const prazoTxt = ip.ativo ? `\nPrazo para palpites: até ${formatarDataHora(ip.limite.toISOString())}.` : '';
+                if (!confirm(`Liberar os palpites para todos os participantes?\n\nJogos cadastrados: ${dadosApp.partidas.length}.${prazoTxt}`)) return;
+                dadosApp.palpitesLiberados = true;
+            }
+            renderizarTudo();
+            await salvarNuvem();
+        }
+
         // ===== Abas por perfil =====
         function atualizarAbasPorPerfil() {
             const admin = ehAdmin();
@@ -2410,9 +2484,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
