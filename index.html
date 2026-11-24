@@ -37,12 +37,15 @@
             <div class="space-y-3 text-left">
                 <div>
                     <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Participante</label>
-                    <select id="login-select-usuario" class="w-full bg-slate-800 border border-slate-700 text-xs font-bold text-emerald-400 rounded-xl px-3 py-2.5 focus:outline-none">
+                    <select id="login-select-usuario" onchange="this.dataset.manual='1'" class="w-full bg-slate-800 border border-slate-700 text-xs font-bold text-emerald-400 rounded-xl px-3 py-2.5 focus:outline-none">
                     </select>
                 </div>
                 <div>
                     <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Senha</label>
-                    <input type="password" id="login-input-senha" placeholder="Sua senha..." class="w-full bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-emerald-500">
+                    <div class="relative">
+                        <input type="password" id="login-input-senha" placeholder="Sua senha..." class="w-full bg-slate-800 border border-slate-700 text-xs rounded-xl pl-3 pr-10 py-2.5 text-white focus:outline-none focus:border-emerald-500">
+                        <button type="button" id="btn-ver-senha" onclick="alternarVisibilidadeSenha()" class="absolute inset-y-0 right-0 px-3 text-slate-400 hover:text-white" title="Mostrar ou ocultar a senha" aria-label="Mostrar ou ocultar a senha"><i class="fa-solid fa-eye"></i></button>
+                    </div>
                 </div>
                 <button type="button" onclick="fazerLoginUsuario()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-3 rounded-xl transition shadow">Entrar no Bolão</button>
             </div>
@@ -129,7 +132,7 @@
             <div id="card-admin-aviso" class="hidden bg-slate-900 border border-slate-700 rounded-2xl p-3 text-xs text-slate-300">👑 Você está como <strong>administrador</strong>: acompanhe os jogos por aqui, mas o Admin não participa dos palpites.</div>
             
 
-            <div id="card-contador" class="bg-slate-900 border border-slate-800 rounded-2xl p-3 flex items-center justify-between gap-2">
+            <div id="card-contador" class="sticky z-30 shadow-xl bg-slate-900 border border-slate-800 rounded-2xl p-3 flex items-center justify-between gap-2">
                 <div>
                     <span class="text-[10px] uppercase font-bold text-slate-400 block">Seus palpites</span>
                     <strong id="info-contador" class="text-white text-sm">0 jogos</strong>
@@ -256,11 +259,13 @@
                         <tbody id="tabela-temporada" class="divide-y divide-slate-800/60"></tbody>
                     </table>
                 </div>
+                <button type="button" id="btn-limpar-historico-temporada" onclick="limparHistorico()" class="hidden w-full bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 text-xs font-bold py-2 rounded-xl transition items-center justify-center gap-1.5"><i class="fa-solid fa-trash-can"></i> Limpar histórico</button>
             </div>
 
             <div data-card="historico" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
                 <div class="flex justify-between items-center"><h2 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-400"></i> Histórico de Rodadas</h2><button type="button" data-toggle-card onclick="alternarCard(this)" class="text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg shrink-0" title="Recolher / expandir"><i class="fa-solid fa-chevron-up"></i></button></div>
                 <div id="lista-historico" class="space-y-2"></div>
+                <button type="button" id="btn-limpar-historico-rodadas" onclick="limparHistorico()" class="hidden w-full bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 text-xs font-bold py-2 rounded-xl transition items-center justify-center gap-1.5"><i class="fa-solid fa-trash-can"></i> Limpar histórico</button>
             </div>
         </div>
 
@@ -372,8 +377,8 @@
                     </div>
                 </div>
 
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
-                    <h3 class="text-xs font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-coins text-emerald-400"></i> Valor por Palpite</h3>
+                <div data-card="valor" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                    <div class="flex justify-between items-center"><h3 class="text-xs font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-coins text-emerald-400"></i> Valor por Palpite</h3><button type="button" data-toggle-card onclick="alternarCard(this)" class="text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg shrink-0" title="Recolher / expandir"><i class="fa-solid fa-chevron-up"></i></button></div>
                     <p class="text-[11px] text-slate-400">Valor pago por participante. O pote é calculado automaticamente (valor × palpites fechados).</p>
                     <div class="flex gap-2">
                         <input type="number" id="input-valor-palpite" min="0" step="0.01" placeholder="Ex: 10" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 flex-grow text-white">
@@ -381,14 +386,14 @@
                     </div>
                 </div>
 
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
-                    <h3 class="text-xs font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-clock text-emerald-400"></i> Fechamento dos Palpites</h3>
+                <div data-card="fechamento" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                    <div class="flex justify-between items-center"><h3 class="text-xs font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-clock text-emerald-400"></i> Fechamento dos Palpites</h3><button type="button" data-toggle-card onclick="alternarCard(this)" class="text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg shrink-0" title="Recolher / expandir"><i class="fa-solid fa-chevron-up"></i></button></div>
                     <p id="admin-prazo-info" class="text-[11px] text-slate-400"></p>
                     <button type="button" id="btn-toggle-prazo" onclick="alternarFechamentoAutomatico()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold py-2 rounded-xl transition">Alternar</button>
                 </div>
 
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
-                    <h3 class="text-xs font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-sliders text-emerald-400"></i> Limite de Palpites por Aposta</h3>
+                <div data-card="limite" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                    <div class="flex justify-between items-center"><h3 class="text-xs font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-sliders text-emerald-400"></i> Limite de Palpites por Aposta</h3><button type="button" data-toggle-card onclick="alternarCard(this)" class="text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg shrink-0" title="Recolher / expandir"><i class="fa-solid fa-chevron-up"></i></button></div>
                     <p class="text-[11px] text-slate-400">Defina quantos jogos cada participante pode escolher por rodada (0 para sem limite).</p>
                     <div class="flex gap-2">
                         <input type="number" id="input-limite-jogos" min="0" placeholder="Ex: 5" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 flex-grow text-white">
@@ -413,8 +418,8 @@
                     </div>
                 </div>
 
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-2 text-center">
-                    <h3 class="text-xs font-bold text-amber-400">🏆 Encerrar Rodada</h3>
+                <div data-card="encerrar" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-2 text-center">
+                    <div class="flex justify-between items-center"><h3 class="text-xs font-bold text-amber-400">🏆 Encerrar Rodada</h3><button type="button" data-toggle-card onclick="alternarCard(this)" class="text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg shrink-0" title="Recolher / expandir"><i class="fa-solid fa-chevron-up"></i></button></div>
                     <p class="text-[11px] text-slate-400">Arquiva a rodada no Histórico (vencedores, prêmio e data) e inicia uma nova, apagando os jogos, resultados e palpites. Participantes e débitos pendentes são mantidos.</p>
                     <button type="button" onclick="encerrarRodada()" class="w-full bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold py-2.5 rounded-xl transition shadow">Encerrar Rodada e Arquivar</button>
                 </div>
@@ -572,6 +577,7 @@
         // ===== Segurança: hash de senhas (SHA-256 com sal), sessão validada e limite de tentativas =====
         const SENHA_PADRAO = "1234";
         const SESSAO_KEY = "bolao_sessao_v2";
+        const ULTIMO_USUARIO_KEY = "bolao_ultimo_usuario";
         const TENTATIVAS_KEY = "bolao_tentativas";
         const HASH_PREFIXO = "h1$";
         const HASH_RODADAS = 5000;
@@ -888,6 +894,7 @@
             const assinatura = lista.join('|');
             const anterior = select.value;
 
+            // Só reconstrói se a lista de participantes realmente mudou
             if (select.dataset.assinatura === assinatura && select.options.length) return;
 
             select.innerHTML = lista.map(amigo => {
@@ -896,13 +903,31 @@
             }).join('');
             select.dataset.assinatura = assinatura;
 
-            if (anterior && lista.includes(anterior)) {
-                select.value = anterior;
-            } else if (usuarioLogado && lista.includes(usuarioLogado)) {
-                select.value = usuarioLogado;
-            } else {
-                select.value = lista[0] || "";
-            }
+            let ultimo = "";
+            try { ultimo = localStorage.getItem(ULTIMO_USUARIO_KEY) || ""; } catch (e) {}
+            const escolhaManual = select.dataset.manual === '1';
+            if (escolhaManual && anterior && lista.includes(anterior)) select.value = anterior;   // respeita o que a pessoa escolheu
+            else if (ultimo && lista.includes(ultimo)) select.value = ultimo;                     // último usuário deste aparelho
+            else if (anterior && lista.includes(anterior)) select.value = anterior;
+            else if (usuarioLogado && lista.includes(usuarioLogado)) select.value = usuarioLogado;
+            else select.value = lista[0] || "";
+        }
+
+        function ocultarSenhaLogin() {
+            const input = document.getElementById('login-input-senha');
+            const ic = document.querySelector('#btn-ver-senha i');
+            if (input) input.type = 'password';
+            if (ic) ic.className = 'fa-solid fa-eye';
+        }
+
+        function alternarVisibilidadeSenha() {
+            const input = document.getElementById('login-input-senha');
+            const ic = document.querySelector('#btn-ver-senha i');
+            if (!input) return;
+            const mostrar = input.type === 'password';
+            input.type = mostrar ? 'text' : 'password';
+            if (ic) ic.className = mostrar ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+            input.focus();
         }
 
         function atualizarInterfaceLogin() {
@@ -943,7 +968,9 @@
             limparFalhasLogin();
             usuarioLogado = usuario;
             salvarSessao();
+            try { localStorage.setItem(ULTIMO_USUARIO_KEY, usuario); } catch (e) {}
             if (inputSenha) inputSenha.value = "";
+            ocultarSenhaLogin();
             if (ehAdmin()) { adminLogado = true; verPalpitesLogado = true; }
 
             atualizarInterfaceLogin();
@@ -1424,7 +1451,8 @@
 
         function calcularRanking(filtro) {
             const partidas = dadosApp.partidas.filter(p => (filtro === 'todos' || p.campeonato === filtro) && !p.situacao);
-            const linhas = dadosApp.amigos.filter(nome => nome !== "Admin").map(nome => {
+            const fechadosRodada = participantesFechados();
+            const linhas = dadosApp.amigos.filter(nome => nome !== "Admin" && fechadosRodada.includes(nome)).map(nome => {
                 const reg = dadosApp.palpites[nome];
                 const escolhas = (reg && reg.fechado !== false && reg.escolhas) || {};
                 let jogos = 0, acertos = 0;
@@ -1473,6 +1501,8 @@
                     <td class="py-2.5 px-2 text-right font-black text-white">${r.pts}</td>
                 </tr>`;
             }).join('');
+
+            if (!linhas.length) corpo.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">Nenhum palpite fechado nesta rodada ainda.</td></tr>`;
 
             const box = document.getElementById('ranking-premio');
             if (box) {
@@ -1638,7 +1668,7 @@
 
             const listaAmigos = document.getElementById('lista-admin-amigos');
             if (listaAmigos) {
-                listaAmigos.innerHTML = dadosApp.amigos.map((nome, i) => `
+                listaAmigos.innerHTML = dadosApp.amigos.map((nome, i) => ({ nome, i })).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' })).map(({ nome, i }) => `
                     <div class="flex justify-between items-center gap-2 text-xs bg-slate-800/60 px-3 py-1.5 rounded-lg">
                         <span><strong>${escapeHtml(nome)}</strong> <span class="text-slate-400 text-[10px]">🔒 senha protegida</span></span>
                         <span class="flex gap-3 shrink-0">
@@ -1920,11 +1950,9 @@
             if (!palpitesAbertos()) { alert(MSG_PALPITES_BLOQUEADOS); return; }
             const reg = dadosApp.palpites[usuarioLogado];
             const escolhas = (reg && reg.escolhas) || {};
-            const itens = dadosApp.partidas.filter(p => escolhas[String(p.id)]).map(p => {
-                const esc = escolhas[String(p.id)];
-                const rotulo = esc === 'casa' ? `${p.casa} vence` : esc === 'visitante' ? `${p.visitante} vence` : "Empate";
-                return `• ${p.casa} x ${p.visitante}: *${rotulo}*`;
-            });
+            const rotuloDe = (p, esc) => esc === 'casa' ? `${p.casa} vence` : esc === 'visitante' ? `${p.visitante} vence` : "Empate";
+            const escolhidos = partidasOrdenadas().map(x => x.p).filter(p => escolhas[String(p.id)]);
+            const itens = escolhidos.map(p => `• ${p.casa} x ${p.visitante}: *${rotuloDe(p, escolhas[String(p.id)])}*`);
             if (!itens.length) { alert("Selecione pelo menos um palpite antes de enviar."); return; }
 
             if (!(reg && reg.fechado === true)) {
@@ -1933,7 +1961,8 @@
                 const limite = Number(dadosApp.limiteJogosPorAposta) || 0;
                 const resumo = limite > 0 ? `${itens.length} de ${limite} jogos` : `${itens.length} jogo(s)`;
                 if (!confirm(`Deseja fechar o seu palpite com ${resumo}?\n\nDepois de fechado, ele não poderá ser alterado.`)) return;
-                if (!confirm(`⚠️ SEGUNDA CONFIRMAÇÃO\n\nFechar DEFINITIVAMENTE o palpite de ${usuarioLogado}?\nValor da aposta: ${formatarMoeda(dadosApp.valorPalpite)} (pagamento ao administrador)\n\nEsta ação não pode ser desfeita por você.`)) return;
+                const conferencia = escolhidos.map(p => `• ${p.casa} x ${p.visitante}: ${rotuloDe(p, escolhas[String(p.id)])}`).join('\n');
+                if (!confirm(`⚠️ SEGUNDA CONFIRMAÇÃO\n\nConfira o seu palpite antes de fechar:\n\n${conferencia}\n\nFechar DEFINITIVAMENTE o palpite de ${usuarioLogado}?\nValor da aposta: ${formatarMoeda(dadosApp.valorPalpite)}\n\nEsta ação não pode ser desfeita por você.`)) return;
                 reg.fechado = true;
                 reg.fechadoEm = new Date().toISOString();
                 reg.atualizadoEm = reg.fechadoEm;
@@ -1958,6 +1987,7 @@
             renderizarPartidasPalpites();
             atualizarRanking();
             renderizarTemporada();
+            atualizarBotoesHistorico();
             atualizarTextoRegras();
             if (abaAtual === 'ver-palpites') renderizarVerPalpites();
             if (abaAtual === 'pagamentos') renderizarPagamentos();
@@ -2402,6 +2432,36 @@
             await salvarNuvem();
         }
 
+        // Mantém o card "Seus palpites" visível logo abaixo do cabeçalho ao rolar a página
+        function ajustarStickyContador() {
+            const cab = document.querySelector('header');
+            const card = document.getElementById('card-contador');
+            if (cab && card) card.style.top = (cab.offsetHeight + 8) + 'px';
+        }
+
+        function atualizarBotoesHistorico() {
+            const mostrar = ehAdmin() && (dadosApp.historico || []).length > 0;
+            ['btn-limpar-historico-temporada', 'btn-limpar-historico-rodadas'].forEach(id => {
+                const b = document.getElementById(id);
+                if (!b) return;
+                b.classList.toggle('hidden', !mostrar);
+                b.classList.toggle('flex', mostrar);
+            });
+        }
+
+        async function limparHistorico() {
+            if (!ehAdmin()) return;
+            const n = (dadosApp.historico || []).length;
+            if (!n) { alert("O histórico já está vazio."); return; }
+            if (!confirmarExclusaoDupla(`TODO o histórico de rodadas e o ranking da temporada (${n} rodada(s)). A contagem volta para a Rodada 1 e os débitos de rodadas anteriores também são removidos; jogos, palpites e pagamentos da rodada atual são mantidos`)) return;
+            const atual = dadosApp.pagamentos[rodadaId()];
+            dadosApp.pagamentos = atual ? { '1': atual } : {};
+            dadosApp.historico = [];
+            dadosApp.rodadaNumero = 1;
+            renderizarTudo();
+            await salvarNuvem();
+        }
+
         // ===== Abas por perfil =====
         function atualizarAbasPorPerfil() {
             const admin = ehAdmin();
@@ -2462,6 +2522,8 @@
 
         window.addEventListener("DOMContentLoaded", () => {
             try { localStorage.removeItem('bolao_usuario_logado'); localStorage.removeItem(SESSAO_KEY); } catch (e) {}
+            ajustarStickyContador();
+            window.addEventListener('resize', ajustarStickyContador);
             document.getElementById('login-input-senha')?.addEventListener('keydown', e => {
                 if (e.key === 'Enter') fazerLoginUsuario();
             });
@@ -2484,3 +2546,4 @@
     </script>
 </body>
 </html>
+
