@@ -265,7 +265,7 @@
             <div data-card="historico" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
                 <div class="flex justify-between items-center"><h2 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-emerald-400"></i> Histórico de Rodadas</h2><button type="button" data-toggle-card onclick="alternarCard(this)" class="text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg shrink-0" title="Recolher / expandir"><i class="fa-solid fa-chevron-up"></i></button></div>
                 <div id="lista-historico" class="space-y-2"></div>
-                <button type="button" id="btn-limpar-historico-rodadas" onclick="limparHistorico()" class="hidden w-full bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 text-xs font-bold py-2 rounded-xl transition items-center justify-center gap-1.5"><i class="fa-solid fa-trash-can"></i> Limpar histórico</button>
+
             </div>
         </div>
 
@@ -404,7 +404,7 @@
                 <div data-card="resultados" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
                     <div class="flex justify-between items-center border-b border-slate-800 pb-2">
                         <h2 class="text-sm font-bold text-white flex items-center gap-2">
-                            <i class="fa-solid fa-whistle text-emerald-400"></i> Lançar Resultado Oficial
+                            <i class="fa-solid fa-whistle text-emerald-400"></i> Lançar Resultado Oficial <span id="admin-qtd-jogos" class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">0 jogos</span>
                         </h2>
                         <button type="button" data-toggle-card onclick="alternarCard(this)" class="text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg shrink-0" title="Recolher / expandir"><i class="fa-solid fa-chevron-up"></i></button>
                     </div>
@@ -445,6 +445,11 @@
                         <input type="datetime-local" id="nova-data-jogo" class="bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white">
                     </div>
                     <button type="button" id="btn-add-partida" onclick="adicionarNovaPartida()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl transition">Cadastrar Partida</button>
+                    <div class="pt-3 mt-1 border-t border-slate-800 space-y-2">
+                        <p class="text-[11px] text-slate-400">Ou cole vários jogos de uma vez, um por linha, com data e hora. O campeonato escolhido acima vale para todos.</p>
+                        <textarea id="textarea-importar-jogos" rows="5" placeholder="25/11 21:30 Flamengo x Vasco&#10;26/11 19:00 Palmeiras x Santos" class="w-full bg-slate-800 border border-slate-700 text-xs text-slate-200 rounded-xl p-3"></textarea>
+                        <button type="button" id="btn-importar-jogos" onclick="importarJogosEmLote()" class="w-full bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 text-xs font-bold py-2.5 rounded-xl transition"><i class="fa-solid fa-file-import"></i> Importar Jogos</button>
+                    </div>
                 </div>
 
                 <div data-card="participantes" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
@@ -890,7 +895,7 @@
             const select = document.getElementById('login-select-usuario');
             if (!select) return;
 
-            const lista = dadosApp.amigos;
+            const lista = [...dadosApp.amigos].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
             const assinatura = lista.join('|');
             const anterior = select.value;
 
@@ -983,6 +988,8 @@
             verPalpitesLogado = false;
             sessionStorage.removeItem(SESSAO_KEY);
             atualizarInterfaceLogin();
+            atualizarBotoesHistorico();   // esconde os botões exclusivos do admin ao sair
+            atualizarBloqueioPalpites();
         }
 
         function atualizarIndicadorStatus(estado, texto) {
@@ -1196,19 +1203,29 @@
             const escolhasUsuario = (reg && reg.escolhas) || {};
             const travado = (!!reg && reg.fechado === true) || prazoEncerrado() || ehAdmin() || (!!usuarioLogado && bloqueadoPorDebito(usuarioLogado));
             const trava = travado ? 'disabled' : '';
-            const extra = travado ? ' opacity-70 cursor-not-allowed' : '';
 
             container.innerHTML = partidasOrdenadas().map(({ p: partida, i }) => {
                 const escolhaAtual = escolhasUsuario[String(partida.id)] || "";
-                const rotuloRes = partida.resultado === 'casa' ? partida.casa : partida.resultado === 'visitante' ? partida.visitante : 'Empate';
+                const rotuloDe = (op) => op === 'casa' ? partida.casa : op === 'visitante' ? partida.visitante : 'Empate';
+                const rotuloRes = rotuloDe(partida.resultado);
                 const linhaRes = partida.situacao
                     ? `<div class="text-[11px] text-slate-300 bg-slate-800/50 rounded-lg px-3 py-1.5">Este jogo está <strong class="text-white">${partida.situacao}</strong> e não vale pontos.</div>`
                     : partida.resultado
                         ? `<div class="text-[11px] text-slate-300 bg-slate-800/50 rounded-lg px-3 py-1.5">Resultado oficial: <strong class="text-white">${escapeHtml(rotuloRes)}</strong>${escolhaAtual ? (escolhaAtual === partida.resultado ? ' • <span class="text-emerald-400 font-bold">✅ Você acertou</span>' : ' • <span class="text-red-400 font-bold">❌ Você errou</span>') : ''}</div>`
                         : '';
-                const btnClass = (op) => escolhaAtual === op
-                    ? "bg-emerald-600 text-white border-emerald-500 font-bold"
-                    : "bg-slate-800/70 text-slate-300 border-slate-700 hover:bg-slate-800";
+                const linhaEscolha = escolhaAtual
+                    ? `<div class="text-[11px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-3 py-1.5">✔ Seu palpite: <strong class="text-white text-xs">${escapeHtml(rotuloDe(escolhaAtual))}</strong></div>`
+                    : '';
+                const selecionado = (op) => escolhaAtual === op;
+                const classe = (op) => selecionado(op)
+                    ? "relative bg-emerald-500 text-white border-emerald-300 ring-2 ring-emerald-300/70 font-extrabold shadow-lg shadow-emerald-500/30"
+                    : "bg-slate-800/70 text-slate-300 border-slate-700 hover:bg-slate-800 font-medium";
+                const extra = (op) => selecionado(op)
+                    ? (travado ? ' cursor-not-allowed' : '')
+                    : (travado ? ' opacity-50 cursor-not-allowed' : (escolhaAtual ? ' opacity-70' : ''));
+                const selo = (op) => selecionado(op)
+                    ? `<span class="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-white text-emerald-600 flex items-center justify-center text-[11px] shadow"><i class="fa-solid fa-check"></i></span>`
+                    : '';
                 return `
                     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
                         <div class="flex justify-between items-center gap-2 text-[10px] text-slate-400">
@@ -1216,18 +1233,22 @@
                             <span class="flex items-center gap-2 shrink-0">${seloStatus(partida)}<span>${escapeHtml(partida.data || '')}</span></span>
                         </div>
                         <div class="grid grid-cols-3 gap-2 text-xs">
-                            <button type="button" ${trava} onclick="registrarPalpiteIdx(${i}, 'casa')" class="p-2.5 rounded-xl border transition flex flex-col items-center gap-1 ${btnClass('casa')}${extra}">
+                            <button type="button" ${trava} onclick="registrarPalpiteIdx(${i}, 'casa')" class="p-2.5 rounded-xl border transition flex flex-col items-center gap-1 ${classe('casa')}${extra('casa')}">
+                                ${selo('casa')}
                                 <img src="${obterEscudo(partida.casa)}" alt="${escapeHtml(partida.casa)}" data-time="${escapeHtml(partida.casa)}" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src=gerarEscudoVetorial(this.dataset.time)" class="w-8 h-8 object-contain">
                                 <span class="truncate max-w-full">${escapeHtml(partida.casa)}</span>
                             </button>
-                            <button type="button" ${trava} onclick="registrarPalpiteIdx(${i}, 'empate')" class="p-2.5 rounded-xl border transition flex flex-col items-center justify-center ${btnClass('empate')}${extra}">
+                            <button type="button" ${trava} onclick="registrarPalpiteIdx(${i}, 'empate')" class="p-2.5 rounded-xl border transition flex flex-col items-center justify-center ${classe('empate')}${extra('empate')}">
+                                ${selo('empate')}
                                 <span>Empate</span>
                             </button>
-                            <button type="button" ${trava} onclick="registrarPalpiteIdx(${i}, 'visitante')" class="p-2.5 rounded-xl border transition flex flex-col items-center gap-1 ${btnClass('visitante')}${extra}">
+                            <button type="button" ${trava} onclick="registrarPalpiteIdx(${i}, 'visitante')" class="p-2.5 rounded-xl border transition flex flex-col items-center gap-1 ${classe('visitante')}${extra('visitante')}">
+                                ${selo('visitante')}
                                 <img src="${obterEscudo(partida.visitante)}" alt="${escapeHtml(partida.visitante)}" data-time="${escapeHtml(partida.visitante)}" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src=gerarEscudoVetorial(this.dataset.time)" class="w-8 h-8 object-contain">
                                 <span class="truncate max-w-full">${escapeHtml(partida.visitante)}</span>
                             </button>
                         </div>
+                        ${linhaEscolha}
                         ${linhaRes}
                     </div>
                 `;
@@ -1320,21 +1341,29 @@
             renderizarVerPalpitesAmigo();
         }
 
-        async function enviarRelatorioPalpitesWhatsApp() {
-            if (!ehAdmin()) { alert("Somente o administrador pode enviar o relatório."); return; }
+        // Linha do relatório com o palpite escolhido em negrito (*texto* = negrito no WhatsApp)
+        function linhaPalpiteWhatsApp(p, esc) {
+            if (esc === 'casa') return `• *${p.casa}* x ${p.visitante}`;
+            if (esc === 'visitante') return `• ${p.casa} x *${p.visitante}*`;
+            return `• ${p.casa} x ${p.visitante} (*Empate*)`;
+        }
+
+        function textoRelatorioPalpites() {
             const lista = listarFinalizados();
-            if (!lista.length) { alert("Ainda não há palpites finalizados."); return; }
             const { total } = calcularPote();
             let msg = `📋 *BOLÃO DOS AMIGOS — PALPITES FECHADOS*\nGerado em ${formatarDataHora(new Date().toISOString())}\n${lista.length} participante(s) • Pote ${formatarMoeda(total)}\n`;
             lista.forEach((r, i) => {
                 msg += `\n*${i + 1}. ${r.nome}* — ${r.quando ? formatarDataHora(r.quando) : 'sem data'}\n`;
-                msg += dadosApp.partidas.filter(p => r.reg.escolhas[String(p.id)]).map(p => {
-                    const esc = r.reg.escolhas[String(p.id)];
-                    const rotulo = esc === 'casa' ? p.casa : esc === 'visitante' ? p.visitante : 'Empate';
-                    return `• ${p.casa} x ${p.visitante}: ${rotulo}`;
-                }).join('\n') + '\n';
+                msg += partidasOrdenadas().map(x => x.p).filter(p => r.reg.escolhas[String(p.id)])
+                    .map(p => linhaPalpiteWhatsApp(p, r.reg.escolhas[String(p.id)])).join('\n') + '\n';
             });
-            await enviarTextoWhatsApp(msg);
+            return msg;
+        }
+
+        async function enviarRelatorioPalpitesWhatsApp() {
+            if (!ehAdmin()) { alert("Somente o administrador pode enviar o relatório."); return; }
+            if (!listarFinalizados().length) { alert("Ainda não há palpites finalizados."); return; }
+            await enviarTextoWhatsApp(textoRelatorioPalpites());
         }
 
         async function adminReabrirPalpiteSelecionado() {
@@ -1571,6 +1600,8 @@
             painel.classList.remove('hidden');
 
             const bloq = prazoEncerrado();
+            const qtdEl = document.getElementById('admin-qtd-jogos');
+            if (qtdEl) qtdEl.textContent = `${dadosApp.partidas.length} ${dadosApp.partidas.length === 1 ? 'jogo' : 'jogos'}`;
             document.getElementById('aviso-prazo-admin')?.classList.toggle('hidden', !bloq);
             const liberado = palpitesAbertos();
             const nJogos = dadosApp.partidas.length;
@@ -1589,7 +1620,7 @@
                 btnLib.classList.toggle('opacity-50', trava);
                 btnLib.classList.toggle('cursor-not-allowed', trava);
             }
-            ['input-valor-palpite', 'btn-salvar-valor', 'input-limite-jogos', 'btn-salvar-limite', 'btn-toggle-prazo', 'btn-add-partida', 'btn-limpar-jogos'].forEach(id => {
+            ['input-valor-palpite', 'btn-salvar-valor', 'input-limite-jogos', 'btn-salvar-limite', 'btn-toggle-prazo', 'btn-add-partida', 'btn-importar-jogos', 'btn-limpar-jogos'].forEach(id => {
                 const el = document.getElementById(id);
                 if (!el) return;
                 el.disabled = bloq;
@@ -1930,18 +1961,19 @@
 
         async function enviarTextoWhatsApp(texto) {
             const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
-            if (url.length <= 3500) {
+            // Links muito longos podem ser cortados pelo WhatsApp: acima de ~1800 caracteres usamos o compartilhar/copiar
+            if (url.length <= 1800) {
                 const w = window.open(url, "_blank");
                 if (!w) alert("O navegador bloqueou a abertura do WhatsApp. Toque no botão novamente.");
                 return;
             }
-            let copiado = false;
-            try { await navigator.clipboard.writeText(texto); copiado = true; } catch (e) {}
             if (navigator.share) {
                 try { await navigator.share({ text: texto }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
             }
+            let copiado = false;
+            try { await navigator.clipboard.writeText(texto); copiado = true; } catch (e) {}
             window.open("https://wa.me/", "_blank");
-            alert(copiado ? "A mensagem é grande e foi copiada. Cole na conversa do WhatsApp." : "A mensagem é grande demais para o link do WhatsApp.");
+            alert(copiado ? "A mensagem é grande e foi copiada completa. Cole na conversa do WhatsApp." : "A mensagem é grande demais para o link do WhatsApp.");
         }
 
         async function gerarComprovanteWhatsApp() {
@@ -2441,12 +2473,10 @@
 
         function atualizarBotoesHistorico() {
             const mostrar = ehAdmin() && (dadosApp.historico || []).length > 0;
-            ['btn-limpar-historico-temporada', 'btn-limpar-historico-rodadas'].forEach(id => {
-                const b = document.getElementById(id);
-                if (!b) return;
-                b.classList.toggle('hidden', !mostrar);
-                b.classList.toggle('flex', mostrar);
-            });
+            const b = document.getElementById('btn-limpar-historico-temporada');
+            if (!b) return;
+            b.classList.toggle('hidden', !mostrar);
+            b.classList.toggle('flex', mostrar);
         }
 
         async function limparHistorico() {
@@ -2460,6 +2490,86 @@
             dadosApp.rodadaNumero = 1;
             renderizarTudo();
             await salvarNuvem();
+        }
+
+        // ===== Importação de jogos em lote (cole uma lista) =====
+        function parsearJogosEmLote(texto) {
+            const agora = new Date();
+            const reData = /\b(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\b/;
+            const reHora = /\b(\d{1,2})\s*[:hH]\s*(\d{2})\b|\b(\d{1,2})\s*[hH]\b/;
+            const reSep = /\s+(?:x|X|×|vs\.?|VS\.?|contra)\s+/;
+            const reDias = /\b(?:segunda|ter[cç]a|quarta|quinta|sexta)(?:-feira)?\b|\bs[áa]bado\b|\bdomingo\b/gi;
+            const limpar = t => t.replace(reDias, ' ').replace(/(^|\s)às(?=\s|$)/gi, ' ').replace(/\s+/g, ' ')
+                .replace(/^[\s\-–—•·|,;:()]+|[\s\-–—•·|,;:()]+$/g, '').trim();
+            const jogos = [], erros = [];
+            let dataAtual = null;
+
+            texto.split(/\r?\n/).forEach(bruta => {
+                if (!bruta.trim()) return;
+                let m = reData.exec(bruta);
+                let t = reHora.exec(bruta);
+                const partes = bruta.split('\t').map(c => {
+                    let x = c.replace(reData, ' ');
+                    x = x.replace(reHora, ' ');
+                    return limpar(x);
+                }).filter(Boolean);
+                const unido = partes.join('  ');
+                let casa = '', visitante = '';
+                const sep = reSep.exec(unido);
+                if (sep) { casa = limpar(unido.slice(0, sep.index)); visitante = limpar(unido.slice(sep.index + sep[0].length)); }
+                else if (partes.length === 2) { casa = partes[0]; visitante = partes[1]; }
+
+                if (!casa || !visitante) {
+                    if (m) dataAtual = m;      // linha de data (cabeçalho do dia): vale para as linhas seguintes
+                    return;                    // demais linhas sem jogo são ignoradas
+                }
+                const dm = m || dataAtual;
+                if (!dm || !t) { erros.push(bruta.trim()); return; }
+                const hora = Number(t[1] !== undefined ? t[1] : t[3]);
+                const min = t[2] !== undefined ? Number(t[2]) : 0;
+                const dia = Number(dm[1]), mes = Number(dm[2]);
+                let ano = dm[3] ? Number(dm[3]) : agora.getFullYear();
+                if (ano < 100) ano += 2000;
+                let d = new Date(ano, mes - 1, dia, hora, min);
+                if (!dm[3] && d.getTime() < agora.getTime() - 60 * 86400000) { ano += 1; d = new Date(ano, mes - 1, dia, hora, min); }
+                const valido = hora <= 23 && min <= 59 && d.getDate() === dia && d.getMonth() === mes - 1 && casa.length >= 2 && visitante.length >= 2 && casa.length <= 40 && visitante.length <= 40;
+                if (!valido) { erros.push(bruta.trim()); return; }
+                jogos.push({ casa, visitante, dt: d });
+            });
+            return { jogos, erros };
+        }
+
+        function chaveJogo(j) {
+            const dt = j.dt ? j.dt.toISOString() : new Date(j.inicio).toISOString();
+            return `${String(j.casa).toLowerCase()}|${String(j.visitante).toLowerCase()}|${dt}`;
+        }
+
+        async function importarJogosEmLote() {
+            if (bloqueadoPeloPrazo("cadastrar novos jogos (encerre a rodada para começar outra)")) return;
+            const ta = document.getElementById('textarea-importar-jogos');
+            const texto = ta ? ta.value : "";
+            if (!texto.trim()) { alert("Cole os jogos (um por linha) antes de importar."); return; }
+            const campeonato = document.getElementById('novo-campeonato')?.value || "Campeonato";
+            const { jogos, erros } = parsearJogosEmLote(texto);
+            const existentes = new Set(dadosApp.partidas.filter(p => p.inicio).map(chaveJogo));
+            const novos = [];
+            let repetidos = 0;
+            jogos.forEach(j => { const k = chaveJogo(j); if (existentes.has(k)) repetidos++; else { existentes.add(k); novos.push(j); } });
+            const avisos = (repetidos ? `\n• ${repetidos} jogo(s) já cadastrado(s) serão ignorados.` : '')
+                + (erros.length ? `\n• ${erros.length} linha(s) não reconhecida(s) (falta data/hora ou formato): ${erros.slice(0, 3).join(' | ')}${erros.length > 3 ? ' …' : ''}` : '');
+            if (!novos.length) { alert("Nenhum jogo novo reconhecido." + avisos); return; }
+            const fmt = dt => dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + " • " + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            const previa = novos.slice(0, 15).map(j => `• ${fmt(j.dt)}  ${j.casa} x ${j.visitante}`).join('\n') + (novos.length > 15 ? `\n… e mais ${novos.length - 15}` : '');
+            if (!confirm(`Importar ${novos.length} jogo(s) em "${campeonato}"?\n\n${previa}${avisos}`)) return;
+            novos.forEach((j, n) => dadosApp.partidas.push({
+                id: "jogo_" + Date.now() + "_" + n + "_" + Math.random().toString(36).slice(2, 6),
+                casa: j.casa, visitante: j.visitante, campeonato,
+                data: fmt(j.dt), inicio: j.dt.toISOString(), resultado: "", situacao: ""
+            }));
+            if (ta) ta.value = "";
+            renderizarTudo();
+            await salvarNuvem();
+            alert(`${novos.length} jogo(s) importado(s).` + (repetidos || erros.length ? `\n(${repetidos} repetido(s) e ${erros.length} linha(s) ignorada(s).)` : ''));
         }
 
         // ===== Abas por perfil =====
@@ -2546,4 +2656,5 @@
     </script>
 </body>
 </html>
+
 
