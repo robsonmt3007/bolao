@@ -48,6 +48,49 @@
                     </div>
                 </div>
                 <button type="button" onclick="fazerLoginUsuario()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-3 rounded-xl transition shadow">Entrar no Bolão</button>
+                <button type="button" onclick="abrirModalAlterarSenha()" class="w-full text-[11px] text-slate-400 hover:text-emerald-400 font-semibold py-1 transition"><i class="fa-solid fa-key"></i> Alterar senha</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ALTERAR SENHA -->
+    <div id="modal-alterar-senha" class="fixed inset-0 bg-slate-950/90 z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-key text-emerald-400"></i> Alterar senha</h3>
+                <button type="button" onclick="fecharModalAlterarSenha()" class="text-slate-400 hover:text-white" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-[11px] text-slate-400">Para trocar a senha é preciso informar a senha atual.</p>
+            <div class="space-y-3 text-left">
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Participante</label>
+                    <select id="alt-select-usuario" class="w-full bg-slate-800 border border-slate-700 text-xs font-bold text-emerald-400 rounded-xl px-3 py-2.5 focus:outline-none"></select>
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Senha atual</label>
+                    <div class="relative">
+                        <input type="password" id="alt-senha-atual" placeholder="Sua senha atual..." autocomplete="off" class="w-full bg-slate-800 border border-slate-700 text-xs rounded-xl pl-3 pr-10 py-2.5 text-white focus:outline-none focus:border-emerald-500">
+                        <button type="button" onclick="alternarVisibilidadeCampo('alt-senha-atual', this)" class="absolute inset-y-0 right-0 px-3 text-slate-400 hover:text-white" title="Mostrar ou ocultar" aria-label="Mostrar ou ocultar a senha"><i class="fa-solid fa-eye"></i></button>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Nova senha</label>
+                    <div class="relative">
+                        <input type="password" id="alt-senha-nova" placeholder="Mínimo de 4 caracteres..." autocomplete="off" class="w-full bg-slate-800 border border-slate-700 text-xs rounded-xl pl-3 pr-10 py-2.5 text-white focus:outline-none focus:border-emerald-500">
+                        <button type="button" onclick="alternarVisibilidadeCampo('alt-senha-nova', this)" class="absolute inset-y-0 right-0 px-3 text-slate-400 hover:text-white" title="Mostrar ou ocultar" aria-label="Mostrar ou ocultar a senha"><i class="fa-solid fa-eye"></i></button>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Confirmar nova senha</label>
+                    <div class="relative">
+                        <input type="password" id="alt-senha-confirmar" placeholder="Repita a nova senha..." autocomplete="off" class="w-full bg-slate-800 border border-slate-700 text-xs rounded-xl pl-3 pr-10 py-2.5 text-white focus:outline-none focus:border-emerald-500">
+                        <button type="button" onclick="alternarVisibilidadeCampo('alt-senha-confirmar', this)" class="absolute inset-y-0 right-0 px-3 text-slate-400 hover:text-white" title="Mostrar ou ocultar" aria-label="Mostrar ou ocultar a senha"><i class="fa-solid fa-eye"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-1">
+                <button type="button" onclick="fecharModalAlterarSenha()" class="bg-slate-800 text-slate-300 text-xs font-bold px-4 py-2 rounded-xl">Cancelar</button>
+                <button type="button" onclick="confirmarAlteracaoSenha()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-xl">Salvar nova senha</button>
             </div>
         </div>
     </div>
@@ -234,6 +277,7 @@
                                 <th class="py-2.5 px-2 text-center">#</th>
                                 <th class="py-2.5 px-2">Participante</th>
                                 <th class="py-2.5 px-2 text-center">Jogos</th>
+                                <th class="py-2.5 px-2 text-center" title="Jogos já encerrados (com resultado lançado)">Enc.</th>
                                 <th class="py-2.5 px-2 text-center">Acertos</th>
                                 <th class="py-2.5 px-2 text-right">Pts</th>
                             </tr>
@@ -1484,16 +1528,14 @@
             const linhas = dadosApp.amigos.filter(nome => nome !== "Admin" && fechadosRodada.includes(nome)).map(nome => {
                 const reg = dadosApp.palpites[nome];
                 const escolhas = (reg && reg.fechado !== false && reg.escolhas) || {};
-                let jogos = 0, acertos = 0;
+                let jogos = 0, acertos = 0, encerrados = 0;
                 partidas.forEach(p => {
                     const esc = escolhas[String(p.id)];
-                    if (esc) { jogos++; if (p.resultado && p.resultado === esc) acertos++; }
+                    if (esc) { jogos++; if (p.resultado) { encerrados++; if (p.resultado === esc) acertos++; } }
                 });
-                return { nome, jogos, acertos, pts: acertos };
+                return { nome, jogos, encerrados, acertos, pts: acertos };
             }).sort((a, b) => b.pts - a.pts || a.nome.localeCompare(b.nome));
-            let pos = 0, anterior = null;
-            linhas.forEach((r, i) => { if (r.pts !== anterior) { pos = i + 1; anterior = r.pts; } r.pos = pos; });
-            return linhas;
+            return posicionar(linhas);
         }
 
         function calcularPremiacao(linhas) {
@@ -1526,23 +1568,26 @@
                     <td class="py-2.5 px-2 text-center font-bold ${lider ? 'text-amber-400' : 'text-slate-400'}">${lider ? '🏆 ' : ''}${r.pos}º</td>
                     <td class="py-2.5 px-2 font-semibold text-white">${escapeHtml(r.nome)}</td>
                     <td class="py-2.5 px-2 text-center text-slate-300">${r.jogos}</td>
+                    <td class="py-2.5 px-2 text-center text-sky-300">${r.encerrados}</td>
                     <td class="py-2.5 px-2 text-center text-emerald-400 font-bold">${r.acertos}</td>
                     <td class="py-2.5 px-2 text-right font-black text-white">${r.pts}</td>
                 </tr>`;
             }).join('');
 
-            if (!linhas.length) corpo.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">Nenhum palpite fechado nesta rodada ainda.</td></tr>`;
+            if (!linhas.length) corpo.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">Nenhum palpite fechado nesta rodada ainda.</td></tr>`;
 
             const box = document.getElementById('ranking-premio');
             if (box) {
                 if (compFiltro !== 'todos') {
                     box.className = "hidden";
                 } else {
-                    const { lideres, total, cada } = calcularPremiacao(linhas);
-                    box.className = "mb-3 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-xs text-amber-200";
-                    box.innerHTML = lideres.length
-                        ? `🏆 <strong>${lideres.length > 1 ? 'Empate no 1º lugar' : '1º lugar'}:</strong> ${lideres.map(l => escapeHtml(l.nome)).join(', ')}<br>Prêmio${lideres.length > 1 ? ' dividido' : ''}: <strong>${formatarMoeda(cada)}</strong>${lideres.length > 1 ? ' para cada' : ''} <span class="opacity-70">(pote ${formatarMoeda(total)})</span>`
-                        : `💰 Pote em jogo: <strong>${formatarMoeda(total)}</strong> — aguardando resultados.`;
+                    const { lideres, cada } = calcularPremiacao(linhas);
+                    if (!lideres.length) {
+                        box.className = "hidden";
+                    } else {
+                        box.className = "mb-3 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-xs text-amber-200";
+                        box.innerHTML = `🏆 <strong>${lideres.length > 1 ? 'Empate no 1º lugar' : '1º lugar'}:</strong> ${lideres.map(l => escapeHtml(l.nome)).join(', ')}<br>Prêmio${lideres.length > 1 ? ' dividido' : ''}: <strong>${formatarMoeda(cada)}</strong>${lideres.length > 1 ? ' para cada' : ''}`;
+                    }
                 }
             }
             const btn = document.getElementById('btn-enviar-ranking');
@@ -1557,12 +1602,11 @@
             if (!linhas.length) { alert("Não há participantes no ranking."); return; }
             const medalhas = { 1: '🥇', 2: '🥈', 3: '🥉' };
             let msg = `🏆 *BOLÃO DOS AMIGOS — RANKING*\n_${filtro === 'todos' ? 'Geral' : filtro}_ • ${formatarDataHora(new Date().toISOString())}\n\n`;
-            msg += linhas.map(r => `${medalhas[r.pos] || ''} ${r.pos}º *${r.nome}* — ${r.pts} pt(s) (${r.acertos}/${r.jogos} jogos)`.trim()).join('\n');
+            msg += linhas.map(r => `${medalhas[r.pos] || ''} ${r.pos}º *${r.nome}* — ${r.pts} pt(s) (${r.encerrados}/${r.jogos} jogos)`.trim()).join('\n');
             if (filtro === 'todos') {
-                const { lideres, total, cada } = calcularPremiacao(linhas);
-                msg += `\n\n💰 Pote: ${formatarMoeda(total)}`;
+                const { lideres, cada } = calcularPremiacao(linhas);
                 if (lideres.length) {
-                    msg += `\n🏆 ${lideres.length > 1 ? 'Empate no 1º: ' : '1º lugar: '}${lideres.map(l => l.nome).join(', ')}\nPrêmio${lideres.length > 1 ? ' dividido' : ''}: ${formatarMoeda(cada)}${lideres.length > 1 ? ' para cada' : ''}`;
+                    msg += `\n\n🏆 ${lideres.length > 1 ? 'Empate no 1º: ' : '1º lugar: '}${lideres.map(l => l.nome).join(', ')}\nPrêmio${lideres.length > 1 ? ' dividido' : ''}: ${formatarMoeda(cada)}${lideres.length > 1 ? ' para cada' : ''}`;
                 }
             }
             await enviarTextoWhatsApp(msg);
@@ -2263,9 +2307,10 @@
         }
 
         // ===== Rodadas, histórico e temporada =====
+        // Posições sem "buracos": 1, 1, 2, 3... (empatados dividem a posição e a próxima segue em sequência)
         function posicionar(linhas) {
             let pos = 0, anterior = null;
-            linhas.forEach((r, i) => { if (r.pts !== anterior) { pos = i + 1; anterior = r.pts; } r.pos = pos; });
+            linhas.forEach(r => { if (r.pts !== anterior) { pos++; anterior = r.pts; } r.pos = pos; });
             return linhas;
         }
 
@@ -2326,7 +2371,7 @@
                 const campeoes = (h.campeoes || []).length
                     ? `🏆 <strong class="text-white">${h.campeoes.map(escapeHtml).join(', ')}</strong> (${h.pts} pt${h.pts === 1 ? '' : 's'}) • Prêmio ${formatarMoeda(h.premioCada)}${h.campeoes.length > 1 ? ' para cada' : ''}`
                     : `Sem vencedor definido`;
-                const linhasRank = (h.ranking || []).map(r => `<div class="flex justify-between text-[11px]"><span>${r.pos}º ${escapeHtml(r.nome)}</span><span class="text-slate-400">${r.pts} pt(s) • ${r.acertos}/${r.jogos}</span></div>`).join('');
+                const linhasRank = posicionar((h.ranking || []).map(r => ({ ...r })).sort((a, b) => b.pts - a.pts)).map(r => `<div class="flex justify-between text-[11px]"><span>${r.pos}º ${escapeHtml(r.nome)}</span><span class="text-slate-400">${r.pts} pt(s) • ${r.acertos}/${r.jogos}</span></div>`).join('');
                 return `<details class="bg-slate-800/60 rounded-xl px-3 py-2 text-xs text-slate-300">
                     <summary class="cursor-pointer">
                         <strong class="text-white">Rodada ${h.numero}</strong> <span class="text-slate-400">• ${formatarDataHora(h.encerradaEm)}</span><br>
@@ -2572,6 +2617,83 @@
             alert(`${novos.length} jogo(s) importado(s).` + (repetidos || erros.length ? `\n(${repetidos} repetido(s) e ${erros.length} linha(s) ignorada(s).)` : ''));
         }
 
+        // ===== Alterar senha (tela de login) =====
+        function alternarVisibilidadeCampo(idInput, btn) {
+            const input = document.getElementById(idInput);
+            if (!input) return;
+            const mostrar = input.type === 'password';
+            input.type = mostrar ? 'text' : 'password';
+            const ic = btn ? btn.querySelector('i') : null;
+            if (ic) ic.className = mostrar ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+        }
+
+        function limparCamposAlterarSenha() {
+            ['alt-senha-atual', 'alt-senha-nova', 'alt-senha-confirmar'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.value = ''; el.type = 'password'; }
+            });
+            document.querySelectorAll('#modal-alterar-senha button i.fa-eye-slash').forEach(i => { i.className = 'fa-solid fa-eye'; });
+        }
+
+        function abrirModalAlterarSenha() {
+            const loginSel = document.getElementById('login-select-usuario');
+            const sel = document.getElementById('alt-select-usuario');
+            if (sel && loginSel) { sel.innerHTML = loginSel.innerHTML; sel.value = loginSel.value; }
+            limparCamposAlterarSenha();
+            document.getElementById('modal-alterar-senha')?.classList.remove('hidden');
+            document.getElementById('alt-senha-atual')?.focus();
+        }
+
+        function fecharModalAlterarSenha() {
+            limparCamposAlterarSenha();
+            document.getElementById('modal-alterar-senha')?.classList.add('hidden');
+        }
+
+        async function confirmarAlteracaoSenha() {
+            const nome = document.getElementById('alt-select-usuario')?.value || '';
+            const atual = (document.getElementById('alt-senha-atual')?.value || '').trim();
+            const nova = (document.getElementById('alt-senha-nova')?.value || '').trim();
+            const conf = (document.getElementById('alt-senha-confirmar')?.value || '').trim();
+            if (!nome || !atual || !nova || !conf) { alert("Preencha todos os campos."); return; }
+            if (nova.length < 4) { alert("A nova senha precisa ter pelo menos 4 caracteres."); return; }
+            if (nova.length > 72) { alert("A nova senha é muito longa."); return; }
+            if (nova !== conf) { alert("A confirmação não confere com a nova senha."); return; }
+            if (nova === atual) { alert("A nova senha precisa ser diferente da atual."); return; }
+            const seg = bloqueioLogin();
+            if (seg) { alert(`Muitas tentativas incorretas. Aguarde ${seg}s.`); return; }
+
+            // Busca os dados mais recentes da nuvem antes de alterar, para não sobrescrever mudanças de outras pessoas
+            try {
+                const remoto = await buscarNuvemSemCache();
+                if (remoto && typeof remoto === 'object') dadosApp = validarGarantiaAdmin(remoto);
+            } catch (e) {
+                alert("Não foi possível conectar à nuvem para alterar a senha. Verifique a internet e tente de novo.");
+                return;
+            }
+            dadosApp = validarGarantiaAdmin(dadosApp);
+            if (!dadosApp.amigos.includes(nome)) { alert("Participante não encontrado."); return; }
+            const credAntiga = dadosApp.senhasUsuarios[nome];
+            if (!verificarSenha(atual, credAntiga)) {
+                registrarFalhaLogin();
+                alert("Senha atual incorreta.");
+                return;
+            }
+            limparFalhasLogin();
+            dadosApp.senhasUsuarios[nome] = criarCredencial(nova);
+            const salvou = await salvarNuvem();
+            if (!salvou) {
+                dadosApp.senhasUsuarios[nome] = credAntiga;     // desfaz: a nuvem não recebeu a nova senha
+                salvarCacheLocal();
+                alert("A nova senha não foi salva na nuvem. Tente novamente.");
+                return;
+            }
+            fecharModalAlterarSenha();
+            const loginSel = document.getElementById('login-select-usuario');
+            if (loginSel) { loginSel.value = nome; loginSel.dataset.manual = '1'; }
+            alert("Senha alterada com sucesso! Entre com a nova senha.");
+            document.getElementById('login-input-senha')?.focus();
+        }
+
         // ===== Abas por perfil =====
         function atualizarAbasPorPerfil() {
             const admin = ehAdmin();
@@ -2656,5 +2778,6 @@
     </script>
 </body>
 </html>
+
 
 
