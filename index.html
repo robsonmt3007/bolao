@@ -493,9 +493,8 @@
                     </div>
                     <button type="button" id="btn-add-partida" onclick="adicionarNovaPartida()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl transition">Cadastrar Partida</button>
                     <div class="pt-3 mt-1 border-t border-slate-800 space-y-2">
-                        <p class="text-[11px] text-slate-400">Ou cole vários jogos de uma vez, um por linha, com data e hora. Escreva a competição no campo abaixo (se deixar vazio, usa a do campeonato selecionado acima). Formato aceito por linha: <span class="text-slate-300">Data • Hora • Casa x Visitante • Competição</span> — separados por tabulação, ponto e vírgula ou barra vertical (|).</p>
-                        <input type="text" id="importar-competicao" placeholder="Competição (ex: Copa do Brasil)" class="w-full bg-slate-800 border border-slate-700 text-xs rounded-xl px-3 py-2 text-white">
-                        <textarea id="textarea-importar-jogos" oninput="previaImportacaoJogos()" rows="6" placeholder="Data;Hora;Jogo;Competição&#10;25/11;21:30;Flamengo x Vasco;Copa do Brasil&#10;26/11;19:00;Palmeiras x Santos;Brasileirão" class="w-full bg-slate-800 border border-slate-700 text-xs text-slate-200 rounded-xl p-3"></textarea>
+                        <p class="text-[11px] text-slate-400">Cole os jogos, um por linha. Só precisa da <strong class="text-slate-300">data</strong>, da <strong class="text-slate-300">hora</strong> e dos <strong class="text-slate-300">dois times</strong> — separados por espaço, ponto e vírgula, vírgula ou tabulação. A liga vem do campeonato escolhido acima.</p>
+                        <textarea id="textarea-importar-jogos" oninput="previaImportacaoJogos()" rows="6" placeholder="28/11 12:00 Manchester United x Brentford&#10;28/11 15:00 Liverpool x Arsenal&#10;29/11 18:00 Chelsea x Manchester City" class="w-full bg-slate-800 border border-slate-700 text-xs text-slate-200 rounded-xl p-3"></textarea>
                         <div id="previa-importar-jogos" class="hidden text-[11px] rounded-xl border border-slate-700 bg-slate-800/60 p-2 max-h-52 overflow-auto"></div>
                         <button type="button" id="btn-importar-jogos" onclick="importarJogosEmLote()" class="w-full bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 text-xs font-bold py-2.5 rounded-xl transition"><i class="fa-solid fa-file-import"></i> Importar Jogos</button>
                     </div>
@@ -573,7 +572,7 @@
         let sincronizandoAgora = false;
         let nuvemCarregada = false;   // só grava na nuvem depois de ler a versão atual dela
 
-        const JSONBIN_MASTER_KEY = "$2a$10$HQsEtj9W.z5P8OqQKS7QUus2O3KmgfdCn3IpG.MmT4mSMGdaUEiK6";
+        const JSONBIN_MASTER_KEY = "$2a$10$lxwiD.gEEta/Lok2tarCS.dpEhTq8bCxm1hCaZQq9jPTjWuH7Myye";
         const BIN_ID_FIXO = "6afe26f5ffd5d16053cce3f2";
         let JSONBIN_BIN_ID = BIN_ID_FIXO || localStorage.getItem('bolao_bin_id') || "";
 
@@ -2951,9 +2950,10 @@
             const texto = document.getElementById('textarea-importar-jogos')?.value || "";
             if (!texto.trim()) { caixa.classList.add('hidden'); caixa.innerHTML = ''; return; }
             const { jogos, erros } = parsearJogosEmLote(texto);
-            const padrao = limpar(document.getElementById('importar-competicao')?.value || "");
+
             const fmt = dt => dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + " • " + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-            const linhas = jogos.map(j => `<div class="text-slate-300">✅ <strong class="text-white">${fmt(j.dt)}</strong> — ${escapeHtml(j.casa)} <span class="text-slate-500">x</span> ${escapeHtml(j.visitante)} <span class="text-emerald-400">[${escapeHtml(j.competicao || padrao || 'campeonato de cima')}]</span></div>`);
+            const liga = document.getElementById('novo-campeonato')?.value || '';
+            const linhas = jogos.map(j => `<div class="text-slate-300">✅ <strong class="text-white">${fmt(j.dt)}</strong> — ${escapeHtml(j.casa)} <span class="text-slate-500">x</span> ${escapeHtml(j.visitante)}${liga ? ` <span class="text-emerald-400">[${escapeHtml(liga)}]</span>` : ''}</div>`);
             const ruins = erros.map(e => `<div class="text-red-400">⚠️ ${escapeHtml(e)}</div>`);
             caixa.innerHTML = `<div class="font-bold text-white mb-1">Conferência: ${jogos.length} jogo(s) reconhecido(s)${erros.length ? ` • ${erros.length} linha(s) não reconhecida(s)` : ''}</div>`
                 + (linhas.length ? linhas.join('') : '') + (ruins.length ? ruins.join('') : '')
@@ -2967,7 +2967,6 @@
             const texto = ta ? ta.value : "";
             if (!texto.trim()) { alert("Cole os jogos (um por linha) antes de importar."); return; }
             const campeonatoBase = document.getElementById('novo-campeonato')?.value || "Campeonato";
-            const competicaoPadrao = limpar(document.getElementById('importar-competicao')?.value || "");
             const { jogos, erros } = parsearJogosEmLote(texto);
             const existentes = new Set(dadosApp.partidas.filter(p => p.inicio).map(chaveJogo));
             const novos = [];
@@ -2976,20 +2975,16 @@
             const avisos = (repetidos ? `\n• ${repetidos} jogo(s) já cadastrado(s) serão ignorados.` : '')
                 + (erros.length ? `\n• ${erros.length} linha(s) não reconhecida(s) (falta data/hora ou formato): ${erros.slice(0, 3).join(' | ')}${erros.length > 3 ? ' …' : ''}` : '');
             if (!novos.length) { alert("Nenhum jogo novo reconhecido." + avisos); return; }
-            const competencias = [...new Set(novos.map(j => j.competicao || competicaoPadrao).filter(Boolean))];
-            const destinos = competencias.length ? competencias : [campeonatoBase];
-            const resumo = destinos.length === 1 ? `em "${destinos[0]}"` : `em ${destinos.length} competições`;
+            const destinos = [campeonatoBase];
+            const resumo = `em "${campeonatoBase}"`;
             const fmt = dt => dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + " • " + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-            const etiqueta = j => {
-                const c = j.competicao || competicaoPadrao || campeonatoBase;
-                return c !== campeonatoBase ? `  [${c}]` : '';
-            };
+            const etiqueta = () => '';
             const previa = novos.slice(0, 15).map(j => `• ${fmt(j.dt)}  ${j.casa} x ${j.visitante}${etiqueta(j)}`).join('\n') + (novos.length > 15 ? `\n… e mais ${novos.length - 15}` : '');
             if (!confirm(`Importar ${novos.length} jogo(s) ${resumo}?\n\n${previa}${avisos}`)) return;
             novos.forEach((j, n) => dadosApp.partidas.push({
                 id: "jogo_" + Date.now() + "_" + n + "_" + Math.random().toString(36).slice(2, 6),
                 casa: j.casa, visitante: j.visitante,
-                campeonato: j.competicao || competicaoPadrao || campeonatoBase,
+                campeonato: campeonatoBase,
                 data: fmt(j.dt), inicio: j.dt.toISOString(), resultado: "", situacao: ""
             }));
             if (ta) ta.value = "";
@@ -3170,6 +3165,7 @@
     </script>
 </body>
 </html>
+
 
 
 
