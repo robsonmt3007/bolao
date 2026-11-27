@@ -1,6 +1,6 @@
 // Service worker do Bolão dos Amigos
 // IMPORTANTE: mude a VERSAO sempre que publicar um index.html novo
-const VERSAO = 'bolao-v6';
+const VERSAO = 'bolao-v7';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './favicon.ico'];
 const HOSTS_CDN = ['cdn.tailwindcss.com', 'cdnjs.cloudflare.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 
